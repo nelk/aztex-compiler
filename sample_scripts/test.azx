@@ -9,6 +9,9 @@ ${
   let cos = #\cos
   let sin = #\sin
   def frac(top, bottom) = #{\frac{$top}{$bottom}}
+  def parens(body) = #{\left($body\right)}
+  def brackets(body) = #{\left[$body\right]}
+  def braces(body) = #{$leftBrace$body$rightBrace}
   % End AMSMath ----------------
 
   @{
@@ -32,7 +35,7 @@ ${
 
       $item{
         #{
-          a^2 + b^2 = $frac{$cos(a+b)}2
+          a^2 + b^2 = $braces {$frac{$cos(a+b)}2}
         }
       }
     }

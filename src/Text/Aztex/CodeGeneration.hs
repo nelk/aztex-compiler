@@ -41,7 +41,7 @@ generate (TextBlock aztex) = do
   st <- get
   generateWithModifiedModes (Just TextMode) (Just LatexText) $
     if latexMode st == LatexMath
-      then generate aztex >>= return . latexText
+      then generate aztex >>= \t -> return (latexText $ " " <> t <> " ")
       else generate aztex
 
 generate (MathBlock aztex) = do

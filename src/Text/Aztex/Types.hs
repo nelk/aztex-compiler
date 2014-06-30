@@ -1,7 +1,6 @@
 module Text.Aztex.Types where
   
 import qualified Data.Map as Map
-import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
 
 data Aztex = CommandBlock Aztex
            | TextBlock Aztex
@@ -10,16 +9,20 @@ data Aztex = CommandBlock Aztex
            | Block [Aztex]
            | Binding String AztexFunction
            | CallBinding String [Aztex]
-           | Import String
+           | Import AztexBindings
   deriving Show
 
 data AztexFunction = AztexFunction [String] Aztex
   deriving Show
 
+
 data AztexMode = CommandMode | TextMode | MathMode deriving (Show, Eq)
 data LatexMode = LatexText | LatexMath deriving (Show, Eq)
 
-data AztexState = AztexState { bindings :: Map.Map String AztexFunction
+type AztexBindings = Map.Map String AztexFunction
+
+data AztexState = AztexState { bindings :: AztexBindings
+                             , exports :: AztexBindings
                              , aztexMode :: AztexMode
                              , latexMode :: LatexMode
                              }
@@ -28,6 +31,5 @@ data AztexState = AztexState { bindings :: Map.Map String AztexFunction
 data AztexStyle = AztexStyle
 
 type AztexError = [String]
-type AztexParser = GenParser Char AztexState Aztex
-type AztexEmptyParser = GenParser Char AztexState ()
+type AztexParseResult = (Aztex, AztexBindings) -- AST and exports
 

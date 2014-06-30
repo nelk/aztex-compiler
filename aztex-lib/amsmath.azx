@@ -1,0 +1,13 @@
+% AMSMath Bindings
+% Import this with "$import aztex-lib/amsmath.azx"
+
+${
+  export let cos = #\cos
+  export let sin = #\sin
+  export def frac(top, bottom) = #{\frac{$top}{$bottom}}
+  export def parens(body) = #{\left($body\right)}
+  export def brackets(body) = #{\left[$body\right]}
+  export def braces(body) = #{$leftBrace$body$rightBrace}
+}
+
+

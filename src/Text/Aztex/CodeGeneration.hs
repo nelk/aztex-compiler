@@ -64,6 +64,11 @@ generate (Block l) = do
             next <- next_rws
             return $ previous <> " " <> next
 
+generate (Import imports) = do
+  st <- get
+  put $ st{bindings = Map.union (bindings st) imports}
+  return ""
+
 generate (Token t) = return $ raw $ Text.pack t
 
 

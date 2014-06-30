@@ -17,6 +17,7 @@ builtInState = AztexState {
       , ("leftBrace", AztexFunction [] $ MathBlock (Token "\\left\\{"))
       , ("rightBrace", AztexFunction [] $ MathBlock (Token "\\right\\}"))
       ]
+  , exports = Map.empty
   , aztexMode = TextMode
   , latexMode = LatexText
   }

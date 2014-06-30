@@ -1,0 +1,8 @@
+% LaTeX Base Environments and Commands
+% Import this with "$import aztex-lib/latex.azx"
+
+${
+  export def enumerate(body) = @{\begin{enumerate} $body \end{enumerate}}
+  export def itemize(body) = @{\begin{itemize} $body \end{itemize}}
+  export def item(body) = @{\item $body}
+}

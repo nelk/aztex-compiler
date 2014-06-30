@@ -1,44 +1,29 @@
-${
-  % Start Basic built-ins ----------------
-  def enumerate(body) = @{\begin{enumerate} $body \end{enumerate}}
-  def itemize(body) = @{\begin{itemize} $body \end{itemize}}
-  def item(body) = @{\item $body}
-  % End Basic built-ins ----------------
+$import aztex-lib/latex.azx
+$import aztex-lib/amsmath.azx
 
-  % Start AMSMath ----------------
-  let cos = #\cos
-  let sin = #\sin
-  def frac(top, bottom) = #{\frac{$top}{$bottom}}
-  def parens(body) = #{\left($body\right)}
-  def brackets(body) = #{\left[$body\right]}
-  def braces(body) = #{$leftBrace$body$rightBrace}
-  % End AMSMath ----------------
+@{
+  $enumerate{
+    $item{
+      My first point % (not shown)
+    }
 
-  @{
-    $enumerate{
-      $item{
-        My first point % (not shown)
+    $item{
+      My second point is made of subpoints:
+      $itemize{
+        $item {A sub-point}
+        $item {Another sub-point}
       }
+    }
 
-      $item{
-        My second point is made of subpoints:
-        $itemize{
-          $item {A sub-point}
-          $item {Another sub-point}
-        }
-      }
+    $item{
+      My third point
+      $item{Guess this works too...}
+    }
 
-      $item{
-        My third point
-        $item{Guess this works too...}
-      }
-
-      $item{
-        #{
-          a^2 + b^2 = $braces {$frac{$cos(a+b)}2}
-        }
+    $item{
+      #{
+        a^2 + b^2 = $braces {$frac{$cos(a+b)}2}
       }
     }
   }
-
 }

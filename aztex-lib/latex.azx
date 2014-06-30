@@ -2,7 +2,9 @@
 % Import this with "$import aztex-lib/latex.azx"
 
 ${
-  export def enumerate(body) = @{\begin{enumerate} $body \end{enumerate}}
-  export def itemize(body) = @{\begin{itemize} $body \end{itemize}}
-  export def item(body) = @{\item $body}
+  export def environment(env_name, env_body) = @{\begin{$env_name} $env_body \end{$env_name}}
+  export def enumerate(body) = $environment enumerate $body
+  export def itemize(body) = $environment enumerate $body
+  export def item(body) = @\item $body
+  export let newline = @\newline
 }

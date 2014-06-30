@@ -27,7 +27,7 @@ main = do
         Right (aztex, _) -> let (output, _, errors) = runRWS (generate aztex) AztexStyle builtInState
                        in do
                         hPutStrLn stderr $ "Generating " ++ fileName ++ "..."
-                        --print aztex
+                        --hPrint stderr aztex
                         if length errors == 0
                           then renderLatex output >>= Text.putStrLn >> hPutStrLn stderr "Success!"
                           else mapM_ (hPutStrLn stderr) errors >> hPutStrLn stderr "Failure!"

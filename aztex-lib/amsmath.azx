@@ -2,12 +2,79 @@
 % Import this with "$import aztex-lib/amsmath.azx"
 
 ${
+  import aztex-lib/latex.azx
+
+  % Environments.
+  export def align(body) = $environment align {$implicit_math $body}
+  export def align_star(body) = $environment align* {$implicit_math $body}
+  export def equation(body) = $environment equation {$implicit_math $body}
+  export def math(body2) = $align_star $body2
+
+  % Basic functions.
   export let cos = #\cos
   export let sin = #\sin
+  export let tan = #\tan
   export def frac(top, bottom) = #{\frac{$top}{$bottom}}
+  export let int = #\int
+  export let integral = #\int
+  export let sum = #\sum
+
+  % Visible, expanding bracket helpers.
   export def parens(body) = #{\left($body\right)}
   export def brackets(body) = #{\left[$body\right]}
   export def braces(body) = #{$leftBrace$body$rightBrace}
+  export def abs(body) = #{\left|$body\right|}
+
+  % Greek letters.
+  export let alpha = #\alpha
+  export let Alpha = #\Alpha
+  export let beta = #\beta
+  export let Beta = #\Beta
+  export let gamma = #\gamma
+  export let Gamma = #\Gamma
+  export let delta = #\delta
+  export let Delta = #\Delta
+  export let epsilon = #\epsilon
+  export let Epsilon = #\Epsilon
+  export let zeta = #\zeta
+  export let Zeta = #\Zeta
+  export let eta = #\eta
+  export let Eta = #\Eta
+  export let theta = #\theta
+  export let Theta = #\Theta
+  export let iota = #\iota
+  export let Iota = #\Iota
+  export let kappa = #\kappa
+  export let Kappa = #\Kappa
+  export let lambda = #\lambda
+  export let Lambda = #\Lambda
+  export let mu = #\mu
+  export let Mu = #\Mu
+  export let nu = #\nu
+  export let Nu = #\Nu
+  export let xi = #\xi
+  export let Xi = #\Xi
+  export let omicron = #\omicron
+  export let Omicron = #\Omicron
+  export let pi = #\pi
+  export let Pi = #\Pi
+  export let rho = #\rho
+  export let Rho = #\Rho
+  export let sigma = #\sigma
+  export let Sigma = #\Sigma
+  export let tao = #\tao
+  export let Tao = #\Tao
+  export let upsilon = #\upsilon
+  export let Upsilon = #\Upsilon
+  export let phi = #\phi
+  export let Phi = #\Phi
+  export let chi = #\chi
+  export let Chi = #\Chi
+  export let psi = #\psi
+  export let Psi = #\Psi
+  export let omega = #\omega
+  export let Omega = #\Omega
+
 }
 
 

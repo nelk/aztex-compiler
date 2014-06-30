@@ -16,6 +16,8 @@ builtInState = AztexState {
       , ("rbrace", AztexFunction [] $ Token "\\}")
       , ("leftBrace", AztexFunction [] $ MathBlock (Token "\\left\\{"))
       , ("rightBrace", AztexFunction [] $ MathBlock (Token "\\right\\}"))
+      , ("implicit_math", AztexFunction [] $ ImplicitModeSwitch LatexMath)
+      , ("implicit_text", AztexFunction [] $ ImplicitModeSwitch LatexText)
       ]
   , exports = Map.empty
   , aztexMode = TextMode

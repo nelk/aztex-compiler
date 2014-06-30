@@ -2,15 +2,15 @@ module Text.Aztex.Processing where
 
 import Text.Aztex.Types
 
-optimize :: Aztex -> Aztex
-optimize (CommandBlock (TextBlock stuff)) = optimize (TextBlock stuff)
-optimize (TextBlock (TextBlock stuff)) = optimize (TextBlock stuff)
-optimize (MathBlock (TextBlock stuff)) = optimize (TextBlock stuff)
-optimize (CommandBlock (MathBlock stuff)) = optimize (MathBlock stuff)
-optimize (TextBlock (MathBlock stuff)) = optimize (MathBlock stuff)
-optimize (MathBlock (MathBlock stuff)) = optimize (MathBlock stuff)
-optimize (CommandBlock (CommandBlock stuff)) = optimize (CommandBlock stuff)
-optimize (TextBlock (CommandBlock stuff)) = optimize (CommandBlock stuff)
-optimize (MathBlock (CommandBlock stuff)) = optimize (CommandBlock stuff)
-optimize (Block l) = Block $ map optimize l
-optimize anythingElse = anythingElse
+condense :: Aztex -> Aztex
+condense (CommandBlock (TextBlock stuff)) = condense (TextBlock stuff)
+condense (TextBlock (TextBlock stuff)) = condense (TextBlock stuff)
+condense (MathBlock (TextBlock stuff)) = condense (TextBlock stuff)
+condense (CommandBlock (MathBlock stuff)) = condense (MathBlock stuff)
+condense (TextBlock (MathBlock stuff)) = condense (MathBlock stuff)
+condense (MathBlock (MathBlock stuff)) = condense (MathBlock stuff)
+condense (CommandBlock (CommandBlock stuff)) = condense (CommandBlock stuff)
+condense (TextBlock (CommandBlock stuff)) = condense (CommandBlock stuff)
+condense (MathBlock (CommandBlock stuff)) = condense (CommandBlock stuff)
+condense (Block l) = Block $ map condense l
+condense anythingElse = anythingElse

@@ -10,6 +10,7 @@ data Aztex = CommandBlock Aztex
            | Binding String AztexFunction
            | CallBinding String [Aztex]
            | Import AztexBindings
+           | ImplicitModeSwitch LatexMode
   deriving Show
 
 data AztexFunction = AztexFunction [String] Aztex

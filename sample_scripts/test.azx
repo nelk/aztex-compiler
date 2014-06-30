@@ -21,9 +21,12 @@ $import aztex-lib/amsmath.azx
     }
 
     $item{
-      #{
-        a^2 + b^2 = $braces {$frac{$cos(a+b)}2}
+      @{Let #a be my variable.  }
+      $equation{
+        a^2 + b^2 = $braces {$frac{$cos(a+b)} {2$pi}}
       }
     }
   }
+
+  %$environment @enumerate { $item hi }
 }

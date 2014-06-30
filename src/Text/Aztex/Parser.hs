@@ -13,9 +13,10 @@ import Text.Aztex.Helpers
 import Text.Aztex.Config
 import Text.Aztex.Processing
 
-type AztexParser = ParsecT String AztexState IO --GenParser Char AztexState Aztex
---type AztexEmptyParser = ParsecT Char AztexState IO () --GenParser Char AztexState ()
+type AztexParser = ParsecT String AztexState IO
 
+-- TODO: BUG - calling a function in a function where they share an argument with the same name will cause infinite recursion!
+-- TODO: BUG - using align* doesn't work correctly with newlines "\\" because they can't be nested in brace blocks.
 
 parseAztexFile :: String -> IO (Either ParseError AztexParseResult)
 parseAztexFile fileName = do
@@ -24,7 +25,7 @@ parseAztexFile fileName = do
   either_aztex <- runParserT p_file builtInState fileName file
   case either_aztex of
     Left e -> return $ Left e
-    Right aztex_results -> return $ Right (optimize $ fst aztex_results, snd aztex_results)
+    Right aztex_results -> return $ Right (condense $ fst aztex_results, snd aztex_results)
 
 
 p_file :: AztexParser AztexParseResult
@@ -48,7 +49,7 @@ p_spaces = skipMany $ oneOf " \v\f\t"
 p_comment :: AztexParser ()
 p_comment = string aztexCommentStart *> skipMany (noneOf "\n\r") <* p_eol
 
--- TODO: Scope bindings during parsing as well.
+-- TODO: Scope bindings during parsing!
 -- Represents block in either text or math mode.
 p_block :: AztexParser Aztex
 p_block = p_typed_block

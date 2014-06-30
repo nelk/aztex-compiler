@@ -11,30 +11,45 @@ import Text.LaTeX.Base.Class (LaTeXC(..), comm1)
 import qualified Data.Text as Text
 import qualified Data.Map as Map
 import Control.Monad.RWS
+import Data.Maybe
 
 import Text.Aztex.Helpers
 import Text.Aztex.Types
 
 
-generate :: Monad m => Aztex -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
-generate (CommandBlock aztex) = do
+generateWithModifiedModes :: Maybe AztexMode
+                          -> Maybe LatexMode
+                          -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
+                          -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
+generateWithModifiedModes amode_m lmode_m gen = do
   st <- get
-  put $ st{aztexMode = CommandMode}
-  generate aztex
+  put $ st{ aztexMode = fromMaybe (aztexMode st) amode_m
+          , latexMode = fromMaybe (latexMode st) lmode_m
+          }
+  result <- gen
+  st' <- get
+  put $ st'{ aztexMode = if isJust amode_m then aztexMode st else aztexMode st'
+           , latexMode = if isJust lmode_m then latexMode st else latexMode st'
+           }
+  return result
+
+
+generate :: Monad m => Aztex -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
+generate (CommandBlock aztex) = generateWithModifiedModes (Just CommandMode) Nothing (generate aztex)
 
 generate (TextBlock aztex) = do
   st <- get
-  put $ st{aztexMode = TextMode, latexMode = LatexText}
-  if latexMode st == LatexMath
-    then generate aztex >>= return . latexText
-    else generate aztex
+  generateWithModifiedModes (Just TextMode) (Just LatexText) $
+    if latexMode st == LatexMath
+      then generate aztex >>= return . latexText
+      else generate aztex
 
 generate (MathBlock aztex) = do
   st <- get
-  put $ st{aztexMode = MathMode, latexMode = LatexMath}
-  if latexMode st == LatexText
-    then generate aztex >>= return . math
-    else generate aztex
+  generateWithModifiedModes (Just MathMode) (Just LatexMath) $
+    if latexMode st == LatexText
+      then generate aztex >>= return . math
+      else generate aztex
 
 generate (Binding name fcn) = do
   st <- get
@@ -51,7 +66,9 @@ generate (CallBinding name args) = do
       let bindingsWithLocal = Map.union (Map.fromList $ zip argNames $ map aztexToFunction args) (bindings st)
       put $ st{bindings = bindingsWithLocal}
       fcnResult <- generate fcnBody
-      put st
+      -- Restore bindings to before call.
+      st' <- get
+      put st'{bindings = bindings st}
       return fcnResult
 
 generate (Block l) = do
@@ -59,6 +76,7 @@ generate (Block l) = do
   result <- foldl1 combine $ map generate l
   put saveState
   return $ raw "{" <> result <> raw "}"
+  --return result
     where combine accum next_rws = do -- TODO: Use Transformer.
             previous <- accum
             next <- next_rws
@@ -70,6 +88,11 @@ generate (Import imports) = do
   return ""
 
 generate (Token t) = return $ raw $ Text.pack t
+
+generate (ImplicitModeSwitch new_mode) = do
+  st <- get
+  put $ st{latexMode = new_mode}
+  return ""
 
 
 renderLatex :: Monad m => LaTeXT_ m -> m Text.Text

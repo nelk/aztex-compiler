@@ -3,6 +3,10 @@ Aztex Compiler
 This compiler is for the Aztex language - front-end typesetting language by S. Menakuru and A. Klen.
 This compiler is currently a prototype and under heavy development - but give it a whirl!
 
+Usage
+-----
+./releases/aztex-dev sample_scripts/test.azx > test.tex && pdflatex test.tex && gnome-open test.pdf
+
 Intro
 -----
 LaTeX produces great results, but can be tedious to write by hand (Knuth never intended for anyone to write it by hand!).

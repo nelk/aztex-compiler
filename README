@@ -1,10 +1,10 @@
 Aztex Compiler
 ==============
 This compiler is for the Aztex language - front-end typesetting language by S. Menakuru and A. Klen.
-It is still under heavy development - but give it a whirl!
+This compiler is currently a prototype and under heavy development - but give it a whirl!
 
 Intro
-------
+-----
 LaTeX produces great results, but can be tedious to write by hand (Knuth never intended for anyone to write it by hand!).
 This gives us two options - use a WYSIWYG editor, or use another front-end language for it.
 Aztex is such a language.
@@ -16,7 +16,7 @@ It was designed to be less noisy than LaTeX and have the following features:
   - separate content from presentation (much more than latex does)
 
 Example
---------
+-------
 First, an example to get us started:
 In LaTeX:
 \newcommand\Prob{\text{Prob}}
@@ -66,4 +66,16 @@ You can import a file using the "import" keyword in command mode to bring in all
 You can export a binding by using "export" before its definition. Exports work anywhere in the document.
 
 -- Formal specification in the works, but this should get you going --
+
+Current Bugs
+------------
+- Putting explicit new lines "\\" in math environments breaks because LaTeX requires brace blocks to end before the end of a line in these environments.
+- Too many nested blocks of braces in generated LaTeX (not a huge issue, but will be solved).
+- Imports aren't cached.
+
+Upcoming Features
+-----------------
+- "splice" - like import, but also inlines file's LaTeX.
+- More command-mode features - evaluating basic math expressions, loops?
+
 

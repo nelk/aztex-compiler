@@ -23,6 +23,7 @@ Example
 -------
 First, an example to get us started:
 In LaTeX:
+```
 \newcommand\Prob{\text{Prob}}
 \begin{enumerate}
   \item Observe the following about $a$:
@@ -30,8 +31,10 @@ In LaTeX:
       \text{Let } a \text{ represent } \Prob_{+x} = \frac{1}{2} \cos{\pi t}
     \end{equation}
 \end{enumerate}
+```
 
 In Aztex:
+```
 let Prob = @Prob
 enumerate${
   item@{
@@ -41,7 +44,7 @@ enumerate${
     }
   }
 }
-
+```
 Language
 ---------
 The idea is that there are 3 modes that you can easily enter, exit, and nest:

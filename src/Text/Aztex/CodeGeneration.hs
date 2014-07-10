@@ -1,17 +1,20 @@
-{-#LANGUAGE OverloadedStrings #-}
+{-#LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Text.Aztex.CodeGeneration where
 
-import Text.LaTeX hiding (between)
+import Text.LaTeX hiding (between, TitlePage)
 import Text.LaTeX.Packages.AMSMath
 import Text.LaTeX.Packages.Graphicx
 import Text.LaTeX.Packages.Geometry
-import Text.LaTeX.Base.Class (LaTeXC(..), comm1)
+import Text.LaTeX.Base.Class (LaTeXC(..), comm1, liftL)
+import Text.LaTeX.Base.Syntax (LaTeX(TeXEnv))
 
 import qualified Data.Text as Text
 import qualified Data.Map as Map
 import Control.Monad.RWS
+import Control.Monad.Identity (Identity(..))
 import Data.Maybe
+import Control.Monad
 
 import Text.Aztex.Helpers
 import Text.Aztex.Types
@@ -34,7 +37,7 @@ generateWithModifiedModes amode_m lmode_m gen = do
   return result
 
 
-generate :: Monad m => Aztex -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
+generate :: forall m. (Monad m) => Aztex -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
 generate (CommandBlock aztex) = generateWithModifiedModes (Just CommandMode) Nothing (generate aztex)
 
 generate (TextBlock aztex) = do
@@ -73,14 +76,21 @@ generate (CallBinding name args) = do
 
 generate (Block l) = do
   saveState <- get
-  result <- foldl1 combine $ map generate l
+  (_, result) <- foldl combine (return (True, "")) l
   put saveState
-  return $ raw "{" <> result <> raw "}"
-  --return result
-    where combine accum next_rws = do -- TODO: Use Transformer.
-            previous <- accum
-            next <- next_rws
-            return $ previous <> " " <> next
+  return result
+    where combine :: Monad m
+                  => RWS AztexStyle AztexError AztexState (Bool, LaTeXT_ m)
+                  -> Aztex
+                  -> RWS AztexStyle AztexError AztexState (Bool, LaTeXT_ m)
+          combine accum next_aztex = do -- TODO: Use Transformer.
+            (use_whitespace, previous) <- accum
+            next <- generate next_aztex
+            case next_aztex of
+              Token t | t == "{" || t == "}" -> return (False, previous <> next)
+              CommandBlock (CallBinding n _) | n == "lbrace" || n == "rbrace" -> return (False, previous <> next)
+              _ | use_whitespace -> return (True, previous <> " " <> next)
+              _ -> return (True, previous <> next)
 
 generate (Import imports) = do
   st <- get
@@ -89,33 +99,68 @@ generate (Import imports) = do
 
 generate (Token t) = return $ raw $ Text.pack t
 
+generate (Parens a) = do
+  st <- get
+  middle <- generate a
+  if latexMode st == LatexMath
+    then return $ raw "\\left(" <> middle <> raw "\\right)"
+    else return $ raw "(" <> middle <> raw ")"
+
+generate (Brackets a) = do
+  st <- get
+  middle <- generate a
+  if latexMode st == LatexMath
+    then return $ raw "\\left[" <> middle <> raw "\\right]"
+    else return $ raw "[" <> middle <> raw "]"
+
 generate (ImplicitModeSwitch new_mode) = do
   st <- get
   put $ st{latexMode = new_mode}
   return ""
 
+generate (TitlePage title_a author_a) = do
+  st <- get
+  --title <- generate title_a
+  --author <- generate author_a
+  put $ st{titlePage = Just (title_a, author_a)}
+  return ""
 
-renderLatex :: Monad m => LaTeXT_ m -> m Text.Text
-renderLatex t = execLaTeXT (wrapBody t) >>= return . render
+
+renderLatex :: Monad m => LaTeXT_ m -> Maybe (LaTeXT_ m, LaTeXT_ m) -> m Text.Text
+renderLatex t tpage = execLaTeXT (wrapBody t tpage) >>= return . render
 
 
 latexText :: LaTeXC l => l -> l
 latexText = comm1 "text"
 
-wrapBody :: Monad m => LaTeXT_ m -> LaTeXT_ m
-wrapBody theBody = do
-  --let vspace_star_fill = raw "\\vspace*{\\fill}"
-  --title $ vspace_star_fill >> theTitle
-  --author $ theAuthor >> vspace_star_fill
+wrapBody :: Monad m => LaTeXT_ m -> Maybe (LaTeXT_ m, LaTeXT_ m) -> LaTeXT_ m
+wrapBody theBody tpage = do
+  let vspace_star_fill = raw "\\vspace*{\\fill}"
+  case tpage of
+    Nothing -> return ()
+    Just (theTitle, theAuthor) -> do
+      title $ vspace_star_fill <> theTitle
+      author $ theAuthor <> vspace_star_fill
   thePreamble
   document $ do
-    --theTitlePage
+    if isJust tpage then theTitlePage else return ()
     theBody
+
+theTitlePage :: Monad m => LaTeXT_ m
+theTitlePage = tpageEnv $ do
+  vfill
+  maketitle
+  thispagestyle "empty"
+  vfill
+
+tpageEnv :: LaTeXC l => l -> l
+tpageEnv = liftL $ TeXEnv "titlepage" []
 
 thePreamble :: Monad m => LaTeXT_ m
 thePreamble = do
   documentclass [Fleqn] article
   usepackage [] amsmath
   usepackage [] graphicx
-  --usepackage [] "braket"
+  usepackage [] "braket"
   importGeometry [GHeight (In 9), GWidth (In 6.5)]
+

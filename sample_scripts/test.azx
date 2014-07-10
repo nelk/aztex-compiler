@@ -21,9 +21,11 @@ $import aztex-lib/amsmath.azx
     }
 
     $item{
+      #{$frac 1 2}
       @{Let #a be my variable.  }
-      $equation{
-        a^2 + b^2 = $braces {$frac{$cos(a+b)} {2$pi}}
+      $math{
+        a^2 + b^2 &= $braces {$frac{$cos(a+b)} {2$pi}} \\
+        a + 1 &= 1 + a
       }
     }
   }

@@ -12,18 +12,21 @@ aztexCommentStart = "%"
 builtInState :: AztexState
 builtInState = AztexState {
     bindings = Map.fromList $
-      [ ("lbrace", AztexFunction [] $ Token "\\{")
-      , ("rbrace", AztexFunction [] $ Token "\\}")
+      [ ("lbrace", AztexFunction [] $ Token "{")
+      , ("rbrace", AztexFunction [] $ Token "}")
       , ("leftBrace", AztexFunction [] $ MathBlock (Token "\\left\\{"))
       , ("rightBrace", AztexFunction [] $ MathBlock (Token "\\right\\}"))
       , ("implicit_math", AztexFunction [] $ ImplicitModeSwitch LatexMath)
       , ("implicit_text", AztexFunction [] $ ImplicitModeSwitch LatexText)
+      , ("titlepage", AztexFunction ["title", "author"] $ TitlePage (CallBinding "title" []) (CallBinding "author" []))
       ]
   , exports = Map.empty
   , aztexMode = TextMode
   , latexMode = LatexText
+  , titlePage = Nothing
   }
 
 
 aztexOutmostBlock :: Aztex -> Aztex
 aztexOutmostBlock = TextBlock
+

@@ -2,9 +2,14 @@
 % Import this with "$import aztex-lib/latex.azx"
 
 ${
-  export def environment(env_name, env_body) = @{\begin{$env_name} $env_body \end{$env_name}}
+  export def latexfn1(fn_name, arg1) = $fn_name$lbrace$arg1$rbrace
+  export def latexfn2(fn_name, arg1, arg2) = $fn_name$lbrace$arg1$rbrace$lbrace$arg2$rbrace
+
+  export def environment(env_name, env_body) = @{\begin$lbrace$env_name$rbrace $env_body \end$lbrace$env_name$rbrace}
+
   export def enumerate(body) = $environment enumerate $body
-  export def itemize(body) = $environment enumerate $body
+  export def itemize(body) = $environment itemize $body
   export def item(body) = @\item $body
+
   export let newline = @\newline
 }

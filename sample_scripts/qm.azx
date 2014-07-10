@@ -1,0 +1,33 @@
+${
+  import aztex-lib/latex.azx
+  import aztex-lib/amsmath.azx
+  import aztex-lib/braket.azx
+
+  %titlepage {\huge PHYS 234 - Assignment 8} {Alex Klen \\ 20372654}
+
+  enumerate${
+    $item$enumerate${
+      item{
+        $math{
+          $psi(x, t) &= $sin(kx)(i $cos ($frac wt 2) + $sin ($frac wt 2) ) \\
+          $hat p &$rightarrow -i $hbar $difr x \\
+          $hat p $psi(x, t) &= p $psi(x, t) \\
+          -i $hbar $difr x $sin(kx)(i $cos($frac wt 2) + $sin($frac wt 2)) &= p $sin(kx)(i $cos($frac wt 2) + $sin($frac wt 2)) \\
+          p &= -i $hbar k $cot(kx)
+        }
+        @{Since this isn't constant with respect to #x, there is no definite momentum.}
+      }
+      item{
+        $math{
+          i $hbar $difr t $psi &= $hat H $psi @{ (Schrodinger's Equation)} \\
+          @Find: $hat H $psi &= E $psi \\
+          i $hbar $difr t $psi &= E $psi \\
+          -$hbar $difr t $sin(kx) $expfrac{-iwt}{2} &= -iE $sin(kx) $expfrac{-iwt}{2} \\
+          E &= $frac {$hbar w} 2
+        }
+      }
+    }
+  }
+
+}
+

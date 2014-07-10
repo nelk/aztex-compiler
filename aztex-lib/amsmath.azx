@@ -14,14 +14,29 @@ ${
   export let cos = #\cos
   export let sin = #\sin
   export let tan = #\tan
-  export def frac(top, bottom) = #{\frac{$top}{$bottom}}
+  export let cot = #\cot
+  export def frac(top, bottom) = $latexfn2 #\frac $top $bottom
+  export def hat(value) = $latexfn1 #\hat $value
   export let int = #\int
   export let integral = #\int
+  export let partial = #\partial
   export let sum = #\sum
+  export let rightarrow = #\rightarrow
+  export let leftarrow = #\leftarrow
+  def exp(stuff) = #{e^$lbrace$stuff$rbrace}
+
+  % Bonus functions.
+  def expfrac(stuff_num, stuff_denom) = #{e^$lbrace $frac $stuff_num $stuff_denom $rbrace}
+  def difr(var) = #{$frac d {d$var}}
+  def part(var) = #{$frac $partial {$partial$var}}
+
+  % Constants.
+  export let hbar = #\hbar
 
   % Visible, expanding bracket helpers.
-  export def parens(body) = #{\left($body\right)}
-  export def brackets(body) = #{\left[$body\right]}
+  % (These are now default in math mode.)
+  %export def parens(body) = #{\left($body\right)}
+  %export def brackets(body) = #{\left[$body\right]}
   export def braces(body) = #{$leftBrace$body$rightBrace}
   export def abs(body) = #{\left|$body\right|}
 
@@ -62,8 +77,8 @@ ${
   export let Rho = #\Rho
   export let sigma = #\sigma
   export let Sigma = #\Sigma
-  export let tao = #\tao
-  export let Tao = #\Tao
+  export let tau = #\tau
+  export let Tau = #\Tau
   export let upsilon = #\upsilon
   export let Upsilon = #\Upsilon
   export let phi = #\phi

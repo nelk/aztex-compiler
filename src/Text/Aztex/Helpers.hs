@@ -18,3 +18,4 @@ aztexExtractFirstBlock _ = []
 aztexOneOrMakeBlock :: (Aztex -> Aztex) -> [Aztex] -> Aztex
 aztexOneOrMakeBlock ctor (single:[]) = ctor single
 aztexOneOrMakeBlock ctor multiple = ctor $ Block multiple
+

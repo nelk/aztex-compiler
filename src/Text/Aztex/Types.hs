@@ -1,16 +1,19 @@
 module Text.Aztex.Types where
-  
+
 import qualified Data.Map as Map
 
 data Aztex = CommandBlock Aztex
            | TextBlock Aztex
            | MathBlock Aztex
-           | Token String 
+           | Token String
+           | Parens Aztex
+           | Brackets Aztex
            | Block [Aztex]
            | Binding String AztexFunction
            | CallBinding String [Aztex]
            | Import AztexBindings
            | ImplicitModeSwitch LatexMode
+           | TitlePage Aztex Aztex
   deriving Show
 
 data AztexFunction = AztexFunction [String] Aztex
@@ -26,6 +29,7 @@ data AztexState = AztexState { bindings :: AztexBindings
                              , exports :: AztexBindings
                              , aztexMode :: AztexMode
                              , latexMode :: LatexMode
+                             , titlePage :: Maybe (Aztex, Aztex)
                              }
   deriving Show
 

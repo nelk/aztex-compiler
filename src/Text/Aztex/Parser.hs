@@ -54,6 +54,8 @@ p_comment = string aztexCommentStart *> skipMany (noneOf "\n\r") <* p_eol
 p_block :: AztexParser Aztex
 p_block = p_typed_block
       <|> between (char '{') (char '}') (p_blocks p_block p_whitespace)
+      <|> between (char '(') (char ')') (Parens <$> p_blocks p_block p_whitespace)
+      <|> between (char '[') (char ']') (Brackets <$> p_blocks p_block p_whitespace)
       <|> p_token
 
 p_typed_block :: AztexParser Aztex
@@ -62,7 +64,7 @@ p_typed_block = (char '$' *> (CommandBlock <$> p_command_block))
             <|> (char '@' *> (TextBlock <$> p_block))
 
 p_token :: AztexParser Aztex
-p_token = Token <$> many1 (noneOf $ " \n\r{}$#@" ++ aztexCommentStart)
+p_token = Token <$> many1 (noneOf $ " \n\r{}()[]$#@" ++ aztexCommentStart)
 
 p_command_block :: AztexParser Aztex
 p_command_block = p_let_binding

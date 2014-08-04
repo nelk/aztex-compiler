@@ -18,15 +18,18 @@ type AztexParser = ParsecT String AztexState IO
 -- TODO: BUG - calling a function in a function where they share an argument with the same name will cause infinite recursion!
 -- TODO: BUG - using align* doesn't work correctly with newlines "\\" because they can't be nested in brace blocks.
 
-parseAztexFile :: String -> IO (Either ParseError AztexParseResult)
-parseAztexFile fileName = do
-  file <- readFile fileName
-  hPutStrLn stderr $ "Parsing " ++ fileName ++ "..."
-  either_aztex <- runParserT p_file builtInState fileName file
+parseAztex :: String -> String -> IO (Either ParseError AztexParseResult)
+parseAztex name text = do
+  either_aztex <- runParserT p_file builtInState name text
   case either_aztex of
     Left e -> return $ Left e
     Right aztex_results -> return $ Right (condense $ fst aztex_results, snd aztex_results)
 
+parseAztexFile :: String -> IO (Either ParseError AztexParseResult)
+parseAztexFile fileName = do
+  file <- readFile fileName
+  hPutStrLn stderr $ "Parsing " ++ fileName ++ "..."
+  parseAztex fileName file
 
 p_file :: AztexParser AztexParseResult
 p_file = do

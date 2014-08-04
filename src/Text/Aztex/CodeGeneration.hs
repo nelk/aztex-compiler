@@ -12,9 +12,7 @@ import Text.LaTeX.Base.Syntax (LaTeX(TeXEnv))
 import qualified Data.Text as Text
 import qualified Data.Map as Map
 import Control.Monad.RWS
-import Control.Monad.Identity (Identity(..))
 import Data.Maybe
-import Control.Monad
 
 import Text.Aztex.Helpers
 import Text.Aztex.Types

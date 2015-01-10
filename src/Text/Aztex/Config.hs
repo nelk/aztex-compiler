@@ -11,9 +11,11 @@ aztexCommentStart = "%"
 
 builtInState :: AztexState
 builtInState = AztexState {
-    bindings = Map.fromList $
+    bindings = Map.fromList
       [ ("lbrace", AztexFunction [] $ Token "{")
       , ("rbrace", AztexFunction [] $ Token "}")
+      , ("lparen", AztexFunction [] $ Token "(")
+      , ("rparen", AztexFunction [] $ Token ")")
       , ("leftBrace", AztexFunction [] $ MathBlock (Token "\\left\\{"))
       , ("rightBrace", AztexFunction [] $ MathBlock (Token "\\right\\}"))
       , ("implicit_math", AztexFunction [] $ ImplicitModeSwitch LatexMath)

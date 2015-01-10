@@ -1,5 +1,6 @@
 module Text.Aztex.Types where
 
+import Text.LaTeX (LaTeX)
 import qualified Data.Map as Map
 
 data Aztex = CommandBlock Aztex
@@ -29,7 +30,7 @@ data AztexState = AztexState { bindings :: AztexBindings
                              , exports :: AztexBindings
                              , aztexMode :: AztexMode
                              , latexMode :: LatexMode
-                             , titlePage :: Maybe (Aztex, Aztex)
+                             , titlePage :: Maybe (LaTeX, LaTeX)
                              }
   deriving Show
 

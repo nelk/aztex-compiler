@@ -4,6 +4,7 @@ import Prelude
 import qualified Data.Text.IO as Text
 import System.Environment
 import System.IO
+import System.Exit
 import Control.Monad.RWS
 import Data.Maybe
 
@@ -16,6 +17,9 @@ import Text.Aztex.CodeGeneration
 usage :: IO ()
 usage = putStrLn $ "./aztex file" ++ "." ++ aztexFileExtension
 
+exitFail :: IO ()
+exitFail = hPutStrLn stderr "Failure!" >> exitWith (ExitFailure 1)
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -24,16 +28,16 @@ main = do
     (fileName:_) -> do
       parseResults <- parseAztexFile fileName
       case parseResults of
-        Left e -> hPrint stderr e
+        Left e -> hPrint stderr e >> exitFail
         Right (aztex, _) -> let (output, finalState, errors) = runRWS (generate aztex) AztexStyle builtInState
-                                (title, _, _) = runRWS (generate $ fst $ fromJust $ titlePage finalState) AztexStyle builtInState
-                                (author, _, _) = runRWS (generate $ snd $ fromJust $ titlePage finalState) AztexStyle builtInState
+                                title = fst $ fromJust $ titlePage finalState
+                                author = snd $ fromJust $ titlePage finalState
                        in do
                         hPutStrLn stderr $ "Generating " ++ fileName ++ "..."
-                        --hPrint stderr aztex
-                        if length errors == 0
-                          then renderLatex output (titlePage finalState >> return (title, author)) >>= Text.putStrLn >> hPutStrLn stderr "Success!"
-                          else mapM_ (hPutStrLn stderr) errors >> hPutStrLn stderr "Failure!"
+                        if null errors
+                          then let renderedLatex = renderLatex output (titlePage finalState >> return (title, author))
+                               in Text.putStrLn renderedLatex >> hPutStrLn stderr "Success!"
+                          else mapM_ (hPutStrLn stderr) errors >> exitFail
 
 
 

@@ -5,7 +5,7 @@ This compiler is currently a prototype and under heavy development - but give it
 
 Usage
 -----
-./releases/aztex-dev sample_scripts/test.azx > test.tex && pdflatex test.tex && gnome-open test.pdf
+./releases/aztex\_linux-x86-64 sample\_scripts/test.azx > test.tex && pdflatex test.tex && gnome-open test.pdf
 
 Intro
 -----

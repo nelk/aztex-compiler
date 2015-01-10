@@ -1,10 +1,13 @@
-{-#LANGUAGE QuasiQuotes #-}
+{-#LANGUAGE QuasiQuotes, OverloadedStrings #-}
 
 module Text.Aztex.AztexIntegrationSpec where
 
 import qualified Data.Text as Text
+import qualified Data.Text.IO as Text
 import Control.Monad.RWS
 import Data.Maybe
+import System.IO
+import Text.LaTeX hiding (between, TitlePage)
 
 import Test.Hspec
 import Text.RawString.QQ (r)
@@ -14,19 +17,28 @@ import Text.Aztex.Parser
 import Text.Aztex.CodeGeneration
 import Text.Aztex.Config
 
-
-parseText :: String -> String -> IO (Either AztexError String)
+-- TODO: Clean up with EitherT IO and use Bifunctor map here.
+parseText :: String -> String -> IO (Either AztexError Aztex)
 parseText name text = do
   parseResults <- parseAztex name text
   case parseResults of
-    Left e -> return $ Left $ [show e]
-    Right (aztex, _) -> let (output, finalState, errors) = runRWS (generate aztex) AztexStyle builtInState
-                            (title, _, _) = runRWS (generate $ fst $ fromJust $ titlePage finalState) AztexStyle builtInState
-                            (author, _, _) = runRWS (generate $ snd $ fromJust $ titlePage finalState) AztexStyle builtInState
-                   in do
-                    if length errors == 0
-                      then renderLatex output (titlePage finalState >> return (title, author)) >>= return . Right . Text.unpack
-                      else return $ Left errors
+    Left e -> return $ Left  [show e]
+    Right (aztex, _) -> return $ Right aztex
+
+
+parseRenderText :: String -> String -> IO (Either AztexError Text.Text)
+parseRenderText name text = do
+  eitherAztex <- parseText name text
+  case eitherAztex of
+       Left e -> return $ Left e
+       Right aztex -> do
+        let (output, finalState, errors) = runRWS (generate aztex) AztexStyle builtInState
+            title = fst $ fromJust $ titlePage finalState
+            author = snd $ fromJust $ titlePage finalState
+        if null errors
+          then let renderedLatex = renderLatex output (titlePage finalState)
+               in return $ Right renderedLatex
+          else return $ Left errors
 
 
 skippableWhitespace :: String
@@ -44,16 +56,19 @@ compareText_ _ _ ia ib = Just (ia, ib)
 
 
 wrapLatexBoilerplate :: String -> String
-wrapLatexBoilerplate body = "\\documentclass[fleqn]{article}\\usepackage{amsmath}\\usepackage{graphicx}\\usepackage{braket}\\usepackage[height=9.00000in,width=6.50000in]{geometry}\\begin{document} " ++ body ++ "\\end{document}"
+wrapLatexBoilerplate body = "\\documentclass[fleqn]{article}\\usepackage{amsmath}\\usepackage{graphicx}\\usepackage{enumerate}\\usepackage{braket}\\usepackage[height=9.00000in,width=6.50000in]{geometry}\\begin{document} " ++ body ++ "\\end{document}"
 
-simpleGenTest :: Expectation
-simpleGenTest = do
-  result <- parseText "simpleGenTest" input1
-  let expected = wrapLatexBoilerplate output1
+titlepageBoilerplate :: String -> String -> String
+titlepageBoilerplate title author = "\\title{\\vspace*{\\fill}" ++ title ++ "}\\author{ " ++ author ++ "\\vspace*{\\fill}}"
+
+genTest :: String -> String -> Expectation
+genTest input output = do
+  result <- parseRenderText "genTest" input
   case result of
-    Right latex -> case compareText latex expected of
-                    Nothing -> return ()
-                    Just (ia, ib) -> (drop ia latex) `shouldBe` (drop ib expected)
+    Right latex -> let latexString = Text.unpack latex
+                   in case compareText latexString output of
+                        Nothing -> return ()
+                        Just (ia, ib) -> (drop ia latexString) `shouldBe` (drop ib output)
     Left errors -> fail $ unlines errors
 
 input1 :: String
@@ -117,9 +132,27 @@ output1 = [r|
 \end{enumerate}
 |]
 
+titlepageInput :: String
+titlepageInput = [r|
+$import aztex-lib/latex.azx
+$titlepage @Title @{First Last}
+|]
+
+titlepageOutput :: String
+titlepageOutput  = [r|
+\begin{titlepage}
+  \vfill{}
+  \maketitle{}
+  \thispagestyle{empty}
+  \vfill{}
+\end{titlepage}
+|]
+
+
 spec :: Spec
 spec = describe "Aztex Parser" $ do
-            it "correctly parses simple file" simpleGenTest
+            it "correctly parses a simple file" $ genTest input1 (wrapLatexBoilerplate output1)
+            it "creates title page" $ genTest titlepageInput (titlepageBoilerplate "Title" "First Last" ++ wrapLatexBoilerplate titlepageOutput)
 
 main :: IO ()
 main = hspec spec

@@ -12,16 +12,16 @@ import Text.LaTeX.Base.Syntax (LaTeX(TeXEnv))
 import qualified Data.Text as Text
 import qualified Data.Map as Map
 import Control.Monad.RWS
+import Control.Monad.Identity
 import Data.Maybe
 
 import Text.Aztex.Helpers
 import Text.Aztex.Types
 
-
 generateWithModifiedModes :: Maybe AztexMode
                           -> Maybe LatexMode
-                          -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
-                          -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
+                          -> RWS AztexStyle AztexError AztexState LaTeX
+                          -> RWS AztexStyle AztexError AztexState LaTeX
 generateWithModifiedModes amode_m lmode_m gen = do
   st <- get
   put $ st{ aztexMode = fromMaybe (aztexMode st) amode_m
@@ -29,13 +29,13 @@ generateWithModifiedModes amode_m lmode_m gen = do
           }
   result <- gen
   st' <- get
-  put $ st'{ aztexMode = if isJust amode_m then aztexMode st else aztexMode st'
-           , latexMode = if isJust lmode_m then latexMode st else latexMode st'
+  put $ st'{ aztexMode = aztexMode $ if isJust amode_m then st else st'
+           , latexMode = latexMode $ if isJust lmode_m then st else st'
            }
   return result
 
 
-generate :: forall m. (Monad m) => Aztex -> RWS AztexStyle AztexError AztexState (LaTeXT_ m)
+generate :: Aztex -> RWS AztexStyle AztexError AztexState LaTeX
 generate (CommandBlock aztex) = generateWithModifiedModes (Just CommandMode) Nothing (generate aztex)
 
 generate (TextBlock aztex) = do
@@ -49,18 +49,18 @@ generate (MathBlock aztex) = do
   st <- get
   generateWithModifiedModes (Just MathMode) (Just LatexMath) $
     if latexMode st == LatexText
-      then generate aztex >>= return . math
+      then liftM math $ generate aztex
       else generate aztex
 
 generate (Binding name fcn) = do
   st <- get
   put $ st{bindings = Map.insert name fcn (bindings st)}
-  return ""
+  return mempty
 
 generate (CallBinding name args) = do
   st <- get
   case Map.lookup name (bindings st) of
-    Nothing -> tell ["Identifier " ++ name ++ " used out of scope."] >> return ""
+    Nothing -> tell ["Identifier " ++ name ++ " used out of scope."] >> return mempty
     Just (AztexFunction argNames fcnBody) -> do
       -- TODO: Union takes the left's value by implementation, but use something to guarantee this because it is crucial that it does this.
       -- Bind local arguments for this function's body.
@@ -75,12 +75,14 @@ generate (CallBinding name args) = do
 generate (Block l) = do
   saveState <- get
   (_, result) <- foldl combine (return (True, "")) l
-  put saveState
+  newState <- get
+  put $ newState { aztexMode = aztexMode saveState
+                 , latexMode = latexMode saveState
+                 }
   return result
-    where combine :: Monad m
-                  => RWS AztexStyle AztexError AztexState (Bool, LaTeXT_ m)
+    where combine :: RWS AztexStyle AztexError AztexState (Bool, LaTeX)
                   -> Aztex
-                  -> RWS AztexStyle AztexError AztexState (Bool, LaTeXT_ m)
+                  -> RWS AztexStyle AztexError AztexState (Bool, LaTeX)
           combine accum next_aztex = do -- TODO: Use Transformer.
             (use_whitespace, previous) <- accum
             next <- generate next_aztex
@@ -92,73 +94,75 @@ generate (Block l) = do
 
 generate (Import imports) = do
   st <- get
-  put $ st{bindings = Map.union (bindings st) imports}
-  return ""
+  put $ st {bindings = Map.union (bindings st) imports}
+  return mempty
 
 generate (Token t) = return $ raw $ Text.pack t
 
 generate (Parens a) = do
   st <- get
   middle <- generate a
-  if latexMode st == LatexMath
-    then return $ raw "\\left(" <> middle <> raw "\\right)"
-    else return $ raw "(" <> middle <> raw ")"
+  return $ if latexMode st == LatexMath
+    then raw "\\left(" <> middle <> raw "\\right)"
+    else raw "(" <> middle <> raw ")"
 
 generate (Brackets a) = do
   st <- get
   middle <- generate a
-  if latexMode st == LatexMath
-    then return $ raw "\\left[" <> middle <> raw "\\right]"
-    else return $ raw "[" <> middle <> raw "]"
+  return $ if latexMode st == LatexMath
+    then raw "\\left[" <> middle <> raw "\\right]"
+    else raw "[" <> middle <> raw "]"
 
 generate (ImplicitModeSwitch new_mode) = do
   st <- get
-  put $ st{latexMode = new_mode}
-  return ""
+  put $ st { latexMode = new_mode }
+  return mempty
 
 generate (TitlePage title_a author_a) = do
   st <- get
-  --title <- generate title_a
-  --author <- generate author_a
-  put $ st{titlePage = Just (title_a, author_a)}
-  return ""
+  title_l <- generate title_a
+  author_l <- generate author_a
+  put st {titlePage = Just (title_l, author_l)}
+  return mempty
 
 
-renderLatex :: Monad m => LaTeXT_ m -> Maybe (LaTeXT_ m, LaTeXT_ m) -> m Text.Text
-renderLatex t tpage = execLaTeXT (wrapBody t tpage) >>= return . render
-
+renderLatex :: LaTeX -> Maybe (LaTeX, LaTeX) -> Text.Text
+renderLatex t tpage = render $ wrapBody t tpage
 
 latexText :: LaTeXC l => l -> l
 latexText = comm1 "text"
 
-wrapBody :: Monad m => LaTeXT_ m -> Maybe (LaTeXT_ m, LaTeXT_ m) -> LaTeXT_ m
-wrapBody theBody tpage = do
-  let vspace_star_fill = raw "\\vspace*{\\fill}"
-  case tpage of
-    Nothing -> return ()
-    Just (theTitle, theAuthor) -> do
-      title $ vspace_star_fill <> theTitle
-      author $ theAuthor <> vspace_star_fill
-  thePreamble
-  document $ do
-    if isJust tpage then theTitlePage else return ()
-    theBody
+wrapBody :: LaTeX -> Maybe (LaTeX, LaTeX) -> LaTeX
+wrapBody theBody tpage =
+  let vspace_star_fill :: LaTeX = raw "\\vspace*{\\fill}"
+      (setTitle, setAuthor, addTitlePage) = case tpage of
+        Nothing -> (mempty, mempty, mempty)
+        Just (theTitle, theAuthor) ->
+          ( title $ vspace_star_fill <> theTitle
+          , author $ theAuthor <> vspace_star_fill
+          , theTitlePage
+          )
+  in setTitle <>
+     setAuthor <>
+     thePreamble <>
+     document (addTitlePage <> theBody)
 
-theTitlePage :: Monad m => LaTeXT_ m
-theTitlePage = tpageEnv $ do
-  vfill
-  maketitle
-  thispagestyle "empty"
+theTitlePage :: LaTeX
+theTitlePage = tpageEnv $
+  vfill <>
+  maketitle <>
+  thispagestyle "empty" <>
   vfill
 
 tpageEnv :: LaTeXC l => l -> l
 tpageEnv = liftL $ TeXEnv "titlepage" []
 
-thePreamble :: Monad m => LaTeXT_ m
-thePreamble = do
+thePreamble :: LaTeX
+thePreamble = runIdentity $ execLaTeXT $ do
   documentclass [Fleqn] article
   usepackage [] amsmath
   usepackage [] graphicx
+  usepackage [] "enumerate"
   usepackage [] "braket"
   importGeometry [GHeight (In 9), GWidth (In 6.5)]
 

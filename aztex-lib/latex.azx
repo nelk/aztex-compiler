@@ -6,10 +6,19 @@ ${
   export def latexfn2(fn_name, arg1, arg2) = $fn_name$lbrace$arg1$rbrace$lbrace$arg2$rbrace
 
   export def environment(env_name, env_body) = @{\begin$lbrace$env_name$rbrace $env_body \end$lbrace$env_name$rbrace}
+  export def environment_opt(env_name, opts, env_body) = @{\begin$lbrace$env_name$rbrace[$opts] $env_body \end$lbrace$env_name$rbrace}
 
   export def enumerate(body) = $environment enumerate $body
+  export def enumerateN(number, body) = $environment_opt enumerate {$number} {$body}
   export def itemize(body) = $environment itemize $body
   export def item(body) = @\item $body
+  export def itemN(start, body) = @\item[$start] $body
+  export def section(sname) = @\section$lbrace$sname$rbrace
+  export def sectionN(number, sname) = {
+    @\setcounter$lbrace @section $rbrace$lbrace $number $rbrace
+    @\addtocounter$lbrace @section $rbrace$lbrace @{-1} $rbrace
+    @\section$lbrace $sname $rbrace
+  }
 
   export let newline = @\newline
 }

@@ -19,6 +19,20 @@ ${
     @\addtocounter$lbrace @section $rbrace$lbrace @{-1} $rbrace
     @\section$lbrace $sname $rbrace
   }
+  export def sectionAlph(sname) = {
+    @\renewcommand\thesection$lbrace@\Alph$lbrace @section $rbrace$rbrace
+    @\section$lbrace $sname $rbrace
+  }
 
-  export let newline = @\newline
+  export let newline = \newline
+  export let nl = \newline
+
+  export def textbf(textbf_body) = $latexfn1 \textbf $textbf_body
+  export def bf(bf_body) = $textbf $bf_body
+  export def bold(bold_body) = $textbf $bold_body
+  export def textit(textit_body) = $latexfn1 \textit $textit_body
+  export def it(it_body) = $textit $it_body
+  export def italic(italic_body) = $textit $italic_body
+  export def underline(underline_body) = $latexfn1 @underline $underline_body
+  export def quote(quote_body) = ``$quote_body''
 }

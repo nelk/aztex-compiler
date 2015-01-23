@@ -40,6 +40,13 @@ ${
   export def braces(body) = #{$leftBrace$body$rightBrace}
   export def abs(body) = #{\left|$body\right|}
 
+  % Operators.
+  export let le = #\le
+  export let ge = #\ge
+  export let in = #\in
+  export def max(max_body) = #\max$lbrace$max_body$rbrace
+  export def Max(Max_iter, Max_body) = #\max\limits_$lbrace$Max_iter$rbrace$lbrace$Max_body$rbrace
+
   % Greek letters.
   export let alpha = #\alpha
   export let Alpha = #\Alpha

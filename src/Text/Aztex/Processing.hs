@@ -12,6 +12,9 @@ import Text.Aztex.Types
 -- Could use another data type?
 expand :: Aztex -> RWS AztexStyle AztexError AztexState Aztex
 expand Empty = return Empty
+expand Whitespace = return Whitespace
+expand EOL = return EOL
+
 expand (CommandBlock aztex) = CommandBlock <$> expand aztex
 expand (TextBlock aztex) = TextBlock <$> expand aztex
 expand (MathBlock aztex) = MathBlock <$> expand aztex

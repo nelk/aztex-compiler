@@ -154,11 +154,31 @@ titlepageOutput  = [r|
 \end{titlepage}
 |]
 
+functionSameArgsInput :: String
+functionSameArgsInput = [r|
+$def foo(body) = @foo$lparen$body$rparen
+$def foobar(body) = $foo{@bar$lparen$body$rparen}
+@{
+  $foobar{test}
+}
+|]
+
+functionSameArgsOutput :: String
+functionSameArgsOutput = [r|
+foo(bar(test))
+|]
+
+temp = [r|
+$import aztex-lib/latex.azx
+$import aztex-lib/amsmath.azx
+$math{$cos 1}
+|]
 
 spec :: Spec
 spec = describe "Aztex Parser" $ do
             it "correctly parses a simple file" $ genTest input1 (wrapLatexBoilerplate output1)
             it "creates title page" $ genTest titlepageInput (titlepageBoilerplate "Title" "First Last" ++ wrapLatexBoilerplate titlepageOutput)
+            it "uses correct function argument bindings" $ genTest functionSameArgsInput (wrapLatexBoilerplate functionSameArgsOutput)
 
 main :: IO ()
 main = hspec spec

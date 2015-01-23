@@ -14,10 +14,13 @@ data Aztex = CommandBlock Aztex
            | Import AztexBindings
            | ImplicitModeSwitch LatexMode
            | TitlePage Aztex Aztex
-  deriving Show
+           | Whitespace
+           | EOL
+           | Empty
+  deriving (Show, Eq)
 
 data AztexFunction = AztexFunction [String] Aztex
-  deriving Show
+  deriving (Show, Eq)
 
 
 data AztexMode = CommandMode | TextMode | MathMode deriving (Show, Eq)

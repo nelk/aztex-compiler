@@ -32,26 +32,40 @@ parseAztexFile fileName = do
 
 parseFile :: AztexParser AztexParseResult
 parseFile = do
-  parseWhitespace
+  _ <- parseWhitespace
   all_aztex <- (eof *> return (Token "")) <|> (aztexOutmostBlock <$> parseBlocks parseBlock parseWhitespace)
   eof
   final_state <- getState
   return (all_aztex, exports final_state)
 
--- At least one block separated by whitespace.
-parseBlocks :: AztexParser Aztex -> AztexParser () -> AztexParser Aztex
-parseBlocks block_parser separator = parseWhitespace *> (Block <$> endBy block_parser separator)
+-- At least one block separated and started by seperator, which is also put into the block. Discards Empty values.
+parseBlocks :: AztexParser Aztex -> AztexParser Aztex -> AztexParser Aztex
+parseBlocks block_parser separator = do
+  firstW <- separator
+  blocks <- many separatedBlocks
+  return $ Block $ filter (/= Empty) (firstW:join blocks)
+   where separatedBlocks = do
+          b <- block_parser
+          w <- separator
+          return [b, w]
 
-parseWhitespace :: AztexParser ()
-parseWhitespace = skipMany $ void (oneOf " \v\f\t\r\n") <|> parseComment
+parseWhitespace :: AztexParser Aztex
+parseWhitespace = do
+  w <- many $ (oneOf " \v\f\t" >> return Whitespace) <|> (oneOf "\r\n" >> return EOL) <|> (parseComment >> return Empty)
+  return $ if EOL `elem` w
+              then EOL
+              else if Whitespace `elem` w
+                      then Whitespace
+                      else Empty
 
-parseSpaces :: AztexParser ()
-parseSpaces = skipMany $ oneOf " \v\f\t"
+parseSpaces :: AztexParser Aztex
+parseSpaces = do
+  sps <- many $ oneOf " \v\f\t"
+  return $ if not (null sps) then Whitespace else Empty
 
 parseComment :: AztexParser ()
 parseComment = string aztexCommentStart *> skipMany (noneOf "\n\r") <* parseEOL
 
--- TODO: Scope bindings during parsing!
 -- Represents block in either text or math mode.
 parseBlock :: AztexParser Aztex
 parseBlock = parseTypedBlock
@@ -77,7 +91,7 @@ parseCommandBlock = parseLetBinding
               <|> parseExport
               <|> parseCommandCall
 
-parseExactlyN :: Int -> AztexParser () -> AztexParser Aztex -> AztexParser [Aztex]
+parseExactlyN :: Int -> AztexParser Aztex -> AztexParser Aztex -> AztexParser [Aztex]
 parseExactlyN n sep parser = replicateM n (sep *> parser)
 
 parseIdentifier :: AztexParser String
@@ -92,9 +106,9 @@ parseFilepath = many1 (noneOf " \n\r")
 parseLetBinding :: AztexParser Aztex
 parseLetBinding = (do
     _ <- try (string "let")
-    parseSpaces
+    _ <- parseSpaces
     name <- parseIdentifier
-    parseSpaces
+    _ <- parseSpaces
     _ <- char '='
     bound <- parseBlocks parseBlock parseSpaces
     let bound_fcn = AztexFunction [] bound
@@ -106,11 +120,11 @@ parseLetBinding = (do
 parseDefBinding :: AztexParser Aztex
 parseDefBinding = (do
     _ <- try (string "def")
-    parseSpaces
+    _ <- parseSpaces
     name <- parseIdentifier
-    parseSpaces
+    _ <- parseSpaces
     argNames <- between (char '(') (char ')') $ sepBy (parseSpaces *> many (noneOf " ,()") <* parseSpaces) (char ',')
-    parseSpaces
+    _ <- parseSpaces
     _ <- char '='
     -- Bind local names.
     st <- getState
@@ -125,10 +139,10 @@ parseDefBinding = (do
 parseImport :: AztexParser Aztex
 parseImport = (do
     _ <- try (string "import")
-    parseSpaces
+    _ <- parseSpaces
     import_fname <- parseFilepath
-    parseSpaces
-    parseEOL
+    _ <- parseSpaces
+    _ <- parseEOL
     --let import_fname = import_prefix ++ "." ++ aztexFileExtension
     either_parsed_import <- liftIO $ parseAztexFile import_fname
     case either_parsed_import of
@@ -142,7 +156,7 @@ parseImport = (do
 parseExport :: AztexParser Aztex
 parseExport = do
   _ <- try (string "export")
-  parseSpaces
+  _ <- parseSpaces
   exported_binding@(Binding export_name export_fcn) <- parseLetBinding <|> parseDefBinding <?> "Can only export let or def expressions."
   updateState $ \s -> s{exports = Map.insert export_name export_fcn $ exports s}
   return exported_binding
@@ -159,11 +173,11 @@ parseCommandCall = (do
         return $ CallBinding name args
   ) <?> "Incorrectly formatted function call."
 
-parseEOL :: AztexParser ()
+parseEOL :: AztexParser Aztex
 parseEOL = ( try (string "\n\r")
     <|> try (string "\r\n")
     <|> string "\n"
     <|> string "\r"
     <|> (eof >> return "(eof)")
-      ) >> return ()
+      ) >> return EOL
 

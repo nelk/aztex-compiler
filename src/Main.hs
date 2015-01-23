@@ -15,7 +15,6 @@ import Text.Aztex.Config
 import Text.Aztex.Processing
 import Text.Aztex.CodeGeneration
 
-
 usage :: IO ()
 usage = putStrLn $ "./aztex file" ++ "." ++ aztexFileExtension
 

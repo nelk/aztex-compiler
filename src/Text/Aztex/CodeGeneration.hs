@@ -11,34 +11,23 @@ import Text.LaTeX.Base.Syntax (LaTeX(TeXEnv))
 
 import qualified Data.Text as Text
 import qualified Data.Map as Map
+import Control.Applicative
 import Control.Monad.RWS
 import Control.Monad.Identity
 import Data.Maybe
-import Control.Applicative
 
-import Text.Aztex.Helpers
 import Text.Aztex.Types
 
-generateWithModifiedModes :: Maybe AztexMode
-                          -> Maybe LatexMode
-                          -> RWS AztexStyle AztexError AztexState LaTeX
-                          -> RWS AztexStyle AztexError AztexState LaTeX
-generateWithModifiedModes amode_m lmode_m gen = do
-  st <- get
-  put $ st{ aztexMode = fromMaybe (aztexMode st) amode_m
-          , latexMode = fromMaybe (latexMode st) lmode_m
-          }
-  result <- gen
-  st' <- get
-  put $ st'{ aztexMode = aztexMode $ if isJust amode_m then st else st'
-           , latexMode = latexMode $ if isJust lmode_m then st else st'
-           }
-  return result
+renderLatex :: LaTeX -> Maybe (LaTeX, LaTeX) -> Text.Text
+renderLatex t tpage = render $ wrapBody t tpage
 
 -- Could use another data type?
 generate :: Aztex -> RWS AztexStyle AztexError AztexState LaTeX
 
 generate Empty = return mempty
+generate Whitespace = return " "
+generate EOL = return " " -- " ~\\newline "
+generate (TitlePage _ _) = return mempty
 
 generate (CommandBlock aztex) = generateWithModifiedModes (Just CommandMode) Nothing (generate aztex)
 
@@ -65,23 +54,12 @@ generate (CallBinding name _) = tell ["InternalError: Tried to generate code for
 
 generate (Block l) = do
   saveState <- get
-  (_, result) <- foldl combine (return (False, "")) l
+  result <- mconcat <$> mapM generate l
   newState <- get
   put $ newState { aztexMode = aztexMode saveState
                  , latexMode = latexMode saveState
                  }
   return result
-    where combine :: RWS AztexStyle AztexError AztexState (Bool, LaTeX)
-                  -> Aztex
-                  -> RWS AztexStyle AztexError AztexState (Bool, LaTeX)
-          combine accum next_aztex = do -- TODO: Use Transformer.
-            (use_whitespace, previous) <- accum
-            next <- generate next_aztex
-            case next_aztex of
-              Token t | t == "{" || t == "}" -> return (False, previous <> next)
-              CommandBlock (CallBinding n _) | n == "lbrace" || n == "rbrace" -> return (False, previous <> next)
-              _ | use_whitespace -> return (True, previous <> " " <> next)
-              _ -> return (True, previous <> next)
 
 generate (Import _) = tell ["InternalError: Tried to generate code for Import, which should have been expanded."] >> return mempty
 
@@ -106,8 +84,22 @@ generate (ImplicitModeSwitch new_mode) = do
   put $ st { latexMode = new_mode }
   return mempty
 
-renderLatex :: LaTeX -> Maybe (LaTeX, LaTeX) -> Text.Text
-renderLatex t tpage = render $ wrapBody t tpage
+generateWithModifiedModes :: Maybe AztexMode
+                          -> Maybe LatexMode
+                          -> RWS AztexStyle AztexError AztexState LaTeX
+                          -> RWS AztexStyle AztexError AztexState LaTeX
+generateWithModifiedModes amode_m lmode_m gen = do
+  st <- get
+  put $ st{ aztexMode = fromMaybe (aztexMode st) amode_m
+          , latexMode = fromMaybe (latexMode st) lmode_m
+          }
+  result <- gen
+  st' <- get
+  put $ st'{ aztexMode = aztexMode $ if isJust amode_m then st else st'
+           , latexMode = latexMode $ if isJust lmode_m then st else st'
+           }
+  return result
+
 
 latexText :: LaTeXC l => l -> l
 latexText = comm1 "text"

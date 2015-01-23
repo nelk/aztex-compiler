@@ -70,8 +70,8 @@ syn cluster aztexFuncVars contains=aztexKeywords,aztexPredef,aztexLatex,aztexFun
 " Operators
 " Uncommment "Hilink aztexOperator" below to highlight these
 syn match aztexLogicalOperator     "[&|~!]"
-syn match aztexArithmeticOperator  "\.\?[-+*/\\^]"
-syn match aztexRelationalOperator  "[=!~]="
+syn match aztexArithmeticOperator  "[-+*/^]"
+syn match aztexRelationalOperator  "[=!~]=\?"
 syn match aztexRelationalOperator  "[<>]=\?"
 syn cluster aztexOperator contains=aztexLogicalOperator,aztexArithmeticOperator,aztexRelationalOperator
 
@@ -82,9 +82,9 @@ syn cluster aztexOperator contains=aztexLogicalOperator,aztexArithmeticOperator,
 " Environments. Note - last has highest priority.
 " Note: Keepend not working so using negative lookahead
 syn region aztexCommandE start=/\$ *{/ end=/}/ contains=@aztexBlockTypes,@aztexFuncVars,aztexComment,aztexImport fold
-syn region aztexCommandE start=/\$ *[^{ ]/ end=/[ \n{}$#@]\@=/ contains=@aztexBlockTypes,@aztexFuncVars,aztexComment,aztexImport keepend
+syn region aztexCommandE start=/\$ *[^{ ]/ end=/[ \n{}()$#@]\@=/ contains=@aztexBlockTypes,@aztexFuncVars,aztexComment,aztexImport keepend
 syn region aztexTextE start=/@ *{/ end=/}/ contains=@aztexBlockTypes,aztexString,aztexNumber,aztexFloat,aztexComment,@Spell fold
-syn region aztexTextE start=/@ *[^{ ]/ end=/[ \n{}$#@]\@=/ contains=@aztexBlockTypes,aztexString,aztexNumber,aztexComment,aztexFloat,@Spell keepend
+syn region aztexTextE start=/@ *[^{ ]/ end=/[ \n{}()$#@]\@=/ contains=@aztexBlockTypes,aztexString,aztexNumber,aztexComment,aztexFloat,@Spell keepend
 syn region aztexMathE start=/# *{/ end=/}/ contains=@aztexBlockTypes,aztexNumber,aztexFloat,aztexComment,@aztexOperator fold
 syn region aztexMathE start=/# *[^{ ]/ end=/[ \n{}$#@]\@=/ contains=@aztexBlockTypes,aztexNumber,aztexFloat,aztexComment,@aztexOperator keepend
 syn region aztexBlock start=/\([@$#] *\)\@<!{/ end=/}/ fold transparent
@@ -131,6 +131,8 @@ if version >= 508 || !exists("did_aztex_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
+  highlight MathVar cterm=bold
+
   HiLink aztexKeyword                  Keyword
   HiLink aztexImport                   Include
   HiLink aztexPredef                   Function
@@ -139,10 +141,13 @@ if version >= 508 || !exists("did_aztex_syntax_inits")
   HiLink aztexString                   Label
   HiLink aztexTextE                    String
   HiLink aztexCommandE                 Identifier
+  HiLink aztexMathE                    MathVar
   HiLink aztexNumber                   Number
   HiLink aztexFloat                    Float
   "HiLink aztexError                    Error
-  HiLink aztexOperator                 Operator
+  HiLink aztexLogicalOperator          Operator
+  HiLink aztexArithmeticOperator       Operator
+  HiLink aztexRelationalOperator       Operator
   HiLink aztexComment                  Comment
   HiLink aztexBlockComment             Comment
   "HiLink aztexLineContinuation         Special

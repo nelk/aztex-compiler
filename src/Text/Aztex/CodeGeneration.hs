@@ -14,6 +14,7 @@ import qualified Data.Map as Map
 import Control.Monad.RWS
 import Control.Monad.Identity
 import Data.Maybe
+import Control.Applicative
 
 import Text.Aztex.Helpers
 import Text.Aztex.Types
@@ -34,8 +35,11 @@ generateWithModifiedModes amode_m lmode_m gen = do
            }
   return result
 
-
+-- Could use another data type?
 generate :: Aztex -> RWS AztexStyle AztexError AztexState LaTeX
+
+generate Empty = return mempty
+
 generate (CommandBlock aztex) = generateWithModifiedModes (Just CommandMode) Nothing (generate aztex)
 
 generate (TextBlock aztex) = do
@@ -57,24 +61,11 @@ generate (Binding name fcn) = do
   put $ st{bindings = Map.insert name fcn (bindings st)}
   return mempty
 
-generate (CallBinding name args) = do
-  st <- get
-  case Map.lookup name (bindings st) of
-    Nothing -> tell ["Identifier " ++ name ++ " used out of scope."] >> return mempty
-    Just (AztexFunction argNames fcnBody) -> do
-      -- TODO: Union takes the left's value by implementation, but use something to guarantee this because it is crucial that it does this.
-      -- Bind local arguments for this function's body.
-      let bindingsWithLocal = Map.union (Map.fromList $ zip argNames $ map aztexToFunction args) (bindings st)
-      put $ st{bindings = bindingsWithLocal}
-      fcnResult <- generate fcnBody
-      -- Restore bindings to before call.
-      st' <- get
-      put st'{bindings = bindings st}
-      return fcnResult
+generate (CallBinding name _) = tell ["InternalError: Tried to generate code for CallBinding of \"" ++ name ++ "\", which should have been expanded."] >> return mempty
 
 generate (Block l) = do
   saveState <- get
-  (_, result) <- foldl combine (return (True, "")) l
+  (_, result) <- foldl combine (return (False, "")) l
   newState <- get
   put $ newState { aztexMode = aztexMode saveState
                  , latexMode = latexMode saveState
@@ -92,10 +83,7 @@ generate (Block l) = do
               _ | use_whitespace -> return (True, previous <> " " <> next)
               _ -> return (True, previous <> next)
 
-generate (Import imports) = do
-  st <- get
-  put $ st {bindings = Map.union (bindings st) imports}
-  return mempty
+generate (Import _) = tell ["InternalError: Tried to generate code for Import, which should have been expanded."] >> return mempty
 
 generate (Token t) = return $ raw $ Text.pack t
 
@@ -117,14 +105,6 @@ generate (ImplicitModeSwitch new_mode) = do
   st <- get
   put $ st { latexMode = new_mode }
   return mempty
-
-generate (TitlePage title_a author_a) = do
-  st <- get
-  title_l <- generate title_a
-  author_l <- generate author_a
-  put st {titlePage = Just (title_l, author_l)}
-  return mempty
-
 
 renderLatex :: LaTeX -> Maybe (LaTeX, LaTeX) -> Text.Text
 renderLatex t tpage = render $ wrapBody t tpage

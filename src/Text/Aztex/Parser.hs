@@ -2,6 +2,7 @@ module Text.Aztex.Parser where
 
 import System.IO
 import Control.Applicative
+import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Map as Map
 
@@ -14,7 +15,6 @@ import Text.Aztex.Config
 
 type AztexParser = ParsecT String AztexState IO
 
--- TODO: BUG - calling a function in a function where they share an argument with the same name will cause infinite recursion!
 -- TODO: BUG - using align* doesn't work correctly with newlines "\\" because they can't be nested in brace blocks.
 
 parseAztex :: String -> String -> IO (Either ParseError AztexParseResult)
@@ -22,7 +22,7 @@ parseAztex name text = do
   either_aztex <- runParserT parseFile builtInState name text
   case either_aztex of
     Left e -> return $ Left e
-    Right aztex_results -> return $ Right (condense $ fst aztex_results, snd aztex_results)
+    Right aztex_results -> return $ Right aztex_results
 
 parseAztexFile :: String -> IO (Either ParseError AztexParseResult)
 parseAztexFile fileName = do

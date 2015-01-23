@@ -8,12 +8,14 @@ import Control.Monad.RWS
 import Data.Maybe
 import System.IO
 import Text.LaTeX hiding (between, TitlePage)
+import Control.Arrow (first)
 
 import Test.Hspec
 import Text.RawString.QQ (r)
 
 import Text.Aztex.Types
 import Text.Aztex.Parser
+import Text.Aztex.Processing
 import Text.Aztex.CodeGeneration
 import Text.Aztex.Config
 
@@ -32,11 +34,15 @@ parseRenderText name text = do
   case eitherAztex of
        Left e -> return $ Left e
        Right aztex -> do
-        let (output, finalState, errors) = runRWS (generate aztex) AztexStyle builtInState
-            title = fst $ fromJust $ titlePage finalState
-            author = snd $ fromJust $ titlePage finalState
-        if null errors
-          then let renderedLatex = renderLatex output (titlePage finalState)
+        let (output, finalState, errors) = runRWS (expand aztex >>= generate) AztexStyle builtInState
+            (mTitle, titleErrors) = maybe (Nothing, mempty) (\(t, _) -> first Just $ evalRWS (generate t) AztexStyle builtInState) $ titlePage finalState
+            (mAuthor, authorErrors) = maybe (Nothing, mempty) (\(_, a) -> first Just $ evalRWS (generate a) AztexStyle builtInState) $ titlePage finalState
+            allErrors = titleErrors <> authorErrors <> errors
+        if null allErrors
+          then let renderedLatex = renderLatex output $ do
+                      title <- mTitle
+                      author <- mAuthor
+                      return (title, author)
                in return $ Right renderedLatex
           else return $ Left errors
 

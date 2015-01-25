@@ -7,7 +7,7 @@ import Control.Monad.IO.Class (liftIO)
 import qualified Data.Map as Map
 
 import Text.ParserCombinators.Parsec hiding (many, optional, try, (<|>))
-import Text.Parsec.Prim (ParsecT, runParserT, try)
+import Text.Parsec.Prim (ParsecT, runParserT, try, putState)
 
 import Text.Aztex.Types
 import Text.Aztex.Helpers
@@ -17,18 +17,24 @@ type AztexParser = ParsecT String AztexState IO
 
 -- TODO: BUG - using align* doesn't work correctly with newlines "\\" because they can't be nested in brace blocks.
 
-parseAztex :: String -> String -> IO (Either ParseError AztexParseResult)
-parseAztex name text = do
-  either_aztex <- runParserT parseFile builtInState name text
+parseAztex_ :: String -> String -> Map.Map String AztexBindings -> IO (Either ParseError AztexParseResult)
+parseAztex_ name text alreadyParsed = do
+  either_aztex <- runParserT parseFile (builtInState{imports = alreadyParsed}) name text
   case either_aztex of
     Left e -> return $ Left e
     Right aztex_results -> return $ Right aztex_results
 
-parseAztexFile :: String -> IO (Either ParseError AztexParseResult)
-parseAztexFile fileName = do
+parseAztexFile_ :: String -> Map.Map String AztexBindings -> IO (Either ParseError AztexParseResult)
+parseAztexFile_ fileName alreadyParsed = do
   file <- readFile fileName
   hPutStrLn stderr $ "Parsing " ++ fileName ++ "..."
-  parseAztex fileName file
+  parseAztex_ fileName file alreadyParsed
+
+parseAztex :: String -> String -> IO (Either ParseError AztexParseResult)
+parseAztex name text = parseAztex_ name text Map.empty
+
+parseAztexFile :: String -> IO (Either ParseError AztexParseResult)
+parseAztexFile fileName = parseAztexFile_ fileName Map.empty
 
 parseFile :: AztexParser AztexParseResult
 parseFile = do
@@ -136,20 +142,37 @@ parseDefBinding = (do
     return $ Binding name bound_fcn
   ) <?> "Incorrectly formatted function definition."
 
+fileNameFromPath :: String -> String
+fileNameFromPath s = reverse $ f_ s ""
+  where f_ "" out = out
+        f_ (a:as) out
+          | a `elem` "/\\" = f_ as ""
+          | otherwise      = f_ as (a:out)
+
 parseImport :: AztexParser Aztex
 parseImport = (do
     _ <- try (string "import")
     _ <- parseSpaces
-    import_fname <- parseFilepath
+    import_fpath <- parseFilepath
     _ <- parseSpaces
     _ <- parseEOL
-    --let import_fname = import_prefix ++ "." ++ aztexFileExtension
-    either_parsed_import <- liftIO $ parseAztexFile import_fname
-    case either_parsed_import of
-      Left errors -> error $ "Parsing " ++ import_fname ++ " failed with errors: " ++ show errors
-      Right (_, imports) -> do
-        updateState $ \s -> s{bindings = Map.union (bindings s) imports}
-        return $ Import imports
+    st <- getState
+    -- TODO: Keep track of base directory of file being parsed so that library files don't need to include "aztex-lib/" when they import.
+    let import_fname = import_fpath -- fileNameFromPath import_fpath
+    case Map.lookup import_fname (imports st) of
+      Just ims -> do
+        putState st{bindings = Map.union (bindings st) ims}
+        return $ Import ims
+      Nothing -> do
+        either_parsed_import <- liftIO $ parseAztexFile_ import_fpath $ imports st
+        case either_parsed_import of
+          Left errors -> error $ "Parsing " ++ import_fpath ++ " failed with errors: " ++ show errors
+          Right (_, ims) -> do
+            updateState $ \s -> s
+              { bindings = Map.union (bindings s) ims
+              , imports = Map.insert import_fname ims (imports s)
+              }
+            return $ Import ims
 
   ) <?> "Incorrectly formatted import statement."
 

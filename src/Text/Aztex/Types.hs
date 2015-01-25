@@ -30,6 +30,7 @@ type AztexBindings = Map.Map String AztexFunction
 
 data AztexState = AztexState { bindings :: AztexBindings
                              , exports :: AztexBindings
+                             , imports :: Map.Map String AztexBindings
                              , aztexMode :: AztexMode
                              , latexMode :: LatexMode
                              , titlePage :: Maybe (Aztex, Aztex)

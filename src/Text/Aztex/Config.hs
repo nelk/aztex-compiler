@@ -23,6 +23,7 @@ builtInState = AztexState {
       , ("titlepage", AztexFunction ["title", "author"] $ TitlePage (CallBinding "title" []) (CallBinding "author" []))
       ]
   , exports = Map.empty
+  , imports = Map.empty
   , aztexMode = TextMode
   , latexMode = LatexText
   , titlePage = Nothing

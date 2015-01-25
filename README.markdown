@@ -35,9 +35,9 @@ In LaTeX:
 
 In Aztex:
 ```
-let Prob = @Prob
-enumerate${
-  item@{
+$let Prob = @Prob
+$enumerate${
+  $item{
     Observe the following about #a:
     $equation{
       @Let a @represent $Prob _{+x} = $frac 1 2 $cos $pi t

@@ -18,8 +18,9 @@ syn case match
 " Syntax group definitions
 syn keyword aztexKeyword  let def import export
 
-syn keyword aztexPredef lbrace rbrace lparen rparen leftBrace rightBrace implicit_math implicit_text titlepage
-syn keyword aztexLatex enumerate enumerateN itemize item itemN section sectionN newline textbf bf bold textit it italic underline quote
+syn keyword aztexPredef lbrace rbrace lparen rparen leftBrace rightBrace titlepage
+syn keyword aztexLatex latexfn1 latexfn2 environment environment_opt enumerate enumerateN itemize item itemN section sectionN sectionAlph newline nl textbf bf bold textit it italic underline quote
+syn keyword aztexAmsmath align align_star equation math cos sin tan cot frac hat int integral partial sum rightarrow leftarrow exp expfrac difr part hbar braces abs le ge in max Max alpha Alpha beta Beta gamma Gamma delta Delta epsilon Epsilon zeta Zeta eta Eta theta Theta iota Iota kappa Kappa lambda Lambda mu Mu nu Nu xi Xi omicron Omicron pi Pi rho Rho sigma Sigma tau Tau upsilon Upsilon phi Phi chi Chi psi Psi omega Omega
 
 " Add functions defined in .m file being read to list of highlighted functions
 function! s:CheckForFunctions()

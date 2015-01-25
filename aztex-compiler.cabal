@@ -1,5 +1,5 @@
 name:                aztex-compiler
-version:             0.2.0.0
+version:             0.2.0.1
 synopsis:            Aztex to LaTeX compiler.
 description:         Compiles Aztex typesetting front-end language to LaTeX. May support multiple backends in the future.
 license:             BSD3

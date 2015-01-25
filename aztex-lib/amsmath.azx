@@ -23,12 +23,12 @@ ${
   export let sum = #\sum
   export let rightarrow = #\rightarrow
   export let leftarrow = #\leftarrow
-  def exp(stuff) = #{e^$lbrace$stuff$rbrace}
+  export def exp(stuff) = #{e^$lbrace$stuff$rbrace}
 
   % Bonus functions.
-  def expfrac(stuff_num, stuff_denom) = #{e^$lbrace $frac $stuff_num $stuff_denom $rbrace}
-  def difr(var) = #{$frac d {d$var}}
-  def part(var) = #{$frac $partial {$partial$var}}
+  export def expfrac(stuff_num, stuff_denom) = #{e^$lbrace $frac $stuff_num $stuff_denom $rbrace}
+  export def difr(var) = #{$frac d {d$var}}
+  export def part(var) = #{$frac $partial {$partial$var}}
 
   % Constants.
   export let hbar = #\hbar

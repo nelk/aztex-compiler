@@ -78,6 +78,9 @@ parseBlock = parseTypedBlock
       <|> between (char '{') (char '}') (parseBlocks parseBlock parseWhitespace)
       <|> between (char '(') (char ')') (Parens <$> parseBlocks parseBlock parseWhitespace)
       <|> between (char '[') (char ']') (Brackets <$> parseBlocks parseBlock parseWhitespace)
+      <|> (Quoted <$> (char '"' *> many (noneOf "\"") <* char '"'))
+      <|> (Superscript <$> (char '^' *> parseBlock))
+      <|> (Subscript <$> (char '_' *> parseBlock))
       <|> parseToken
 
 parseTypedBlock :: AztexParser Aztex
@@ -86,7 +89,7 @@ parseTypedBlock = (char '$' *> (CommandBlock <$> parseCommandBlock))
             <|> (char '@' *> (TextBlock <$> parseBlock))
 
 parseToken :: AztexParser Aztex
-parseToken = Token <$> many1 (noneOf $ " \n\r{}()[]$#@" ++ aztexCommentStart)
+parseToken = Token <$> many1 (noneOf $ " \n\r{}()[]$#@_^" ++ aztexCommentStart)
 
 parseCommandBlock :: AztexParser Aztex
 parseCommandBlock = parseLetBinding

@@ -35,7 +35,7 @@ generate (TextBlock aztex) = do
   st <- get
   generateWithModifiedModes (Just TextMode) (Just LatexText) $
     if latexMode st == LatexMath
-      then generate aztex >>= \t -> return (latexText $ " " <> t <> " ")
+      then generate aztex >>= \t -> return (latexText t)
       else generate aztex
 
 generate (MathBlock aztex) = do
@@ -64,6 +64,7 @@ generate (Block l) = do
 generate (Import _) = tell ["InternalError: Tried to generate code for Import, which should have been expanded."] >> return mempty
 
 generate (Token t) = return $ raw $ Text.pack t
+generate (Quoted s) = return $ raw "``" <> raw (Text.pack s) <> raw "\""
 
 generate (Parens a) = do
   st <- get
@@ -78,6 +79,20 @@ generate (Brackets a) = do
   return $ if latexMode st == LatexMath
     then raw "\\left[" <> middle <> raw "\\right]"
     else raw "[" <> middle <> raw "]"
+
+generate (Superscript a) = do
+  st <- get
+  middle <- generate a
+  return $ if latexMode st == LatexMath
+    then raw "^{" <> middle <> raw "}"
+    else raw "\\textsuperscript{" <> middle <> raw "}"
+
+generate (Subscript a) = do
+  st <- get
+  middle <- generate a
+  return $ if latexMode st == LatexMath
+    then raw "_{" <> middle <> raw "}"
+    else math $ raw "_{" <> latexText middle <> raw "}"
 
 generate (ImplicitModeSwitch new_mode) = do
   st <- get

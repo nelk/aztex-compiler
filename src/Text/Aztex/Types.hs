@@ -2,10 +2,13 @@ module Text.Aztex.Types where
 
 import qualified Data.Map as Map
 
+-- TODO: Make math mode notation better, eg. turn operators like ">=" into what "$ge" does now.
+
 data Aztex = CommandBlock Aztex
            | TextBlock Aztex
            | MathBlock Aztex
            | Token String
+           | Quoted String
            | Parens Aztex
            | Brackets Aztex
            | Block [Aztex]
@@ -14,6 +17,8 @@ data Aztex = CommandBlock Aztex
            | Import AztexBindings
            | ImplicitModeSwitch LatexMode
            | TitlePage Aztex Aztex
+           | Subscript Aztex
+           | Superscript Aztex
            | Whitespace
            | EOL
            | Empty

@@ -62,7 +62,7 @@ compareText_ _ _ ia ib = Just (ia, ib)
 
 
 wrapLatexBoilerplate :: String -> String
-wrapLatexBoilerplate body = "\\documentclass[fleqn]{article}\\usepackage{amsmath}\\usepackage{graphicx}\\usepackage{enumerate}\\usepackage{braket}\\usepackage[height=9.00000in,width=6.50000in]{geometry}\\begin{document} " ++ body ++ "\\end{document}"
+wrapLatexBoilerplate body = "\\documentclass[fleqn]{article}\\usepackage[fleqn]{amsmath}\\usepackage{graphicx}\\usepackage{amssymb}\\usepackage{enumerate}\\usepackage{braket}\\usepackage{listings}\\usepackage[height=9.00000in,width=6.50000in]{geometry}\\begin{document} " ++ body ++ "\\end{document}"
 
 titlepageBoilerplate :: String -> String -> String
 titlepageBoilerplate title author = "\\title{\\vspace*{\\fill}" ++ title ++ "}\\author{ " ++ author ++ "\\vspace*{\\fill}}"
@@ -132,7 +132,7 @@ output1 = [r|
     $\frac{1}{2}$
     Let $a$ be my variable.
     \begin{align*}
-      a^2 + b^2 &= \left\{ \frac{\cos\left(a+b\right)}{2\pi} \right\} \\
+      a^{2} + b^{2} &= \left\{ \frac{\cos\left(a+b\right)}{2\pi} \right\} \\
       a + 1 &= 1 + a
     \end{align*}
 \end{enumerate}
@@ -168,11 +168,6 @@ functionSameArgsOutput = [r|
 foo(bar(test))
 |]
 
-temp = [r|
-$import aztex-lib/latex.azx
-$import aztex-lib/amsmath.azx
-$math{$cos 1}
-|]
 
 spec :: Spec
 spec = describe "Aztex Parser" $ do

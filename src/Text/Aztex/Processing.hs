@@ -49,14 +49,17 @@ expand (CallBinding name args) = do
 
 expand (Block l) = Block <$> mapM expand l
 
-expand (Import imports) = do
+expand (Import imp) = do
   st <- get
-  put $ st {bindings = Map.union (bindings st) imports}
+  put $ st {bindings = Map.union (bindings st) imp}
   return Empty
 
 expand t@(Token _) = return t
 expand (Parens a) = Parens <$> expand a
 expand (Brackets a) = Brackets <$> expand a
+expand (Subscript a) = Subscript <$> expand a
+expand (Superscript a) = Superscript <$> expand a
+expand (Quoted a) = return $ Quoted a
 expand a@(ImplicitModeSwitch _) = return a
 
 expand (TitlePage title_a author_a) = do

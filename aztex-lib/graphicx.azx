@@ -1,0 +1,8 @@
+% LaTeX graphicx library.
+% Import with "$import aztex-lib/graphicx.azx"
+
+${
+  export def includeGraphics(fname) = @\includegraphics$lbrace$fname$rbrace
+  export def includeGraphicsOpts(fname, opts) = @\includegraphics[$opts]$lbrace$fname$rbrace
+  export def graphic(fname, opts) = @~\\$includeGraphicsOpts $fname $opts
+}

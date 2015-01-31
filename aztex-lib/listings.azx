@@ -1,0 +1,15 @@
+% Listings.
+% Import this with "$import aztex-lib/listings.azx".
+
+${
+  import aztex-lib/latex.azx
+  
+  export def lstlisting(opts, body) = $environment @lstlisting {[$opts] $literalnewline $body}
+  export def lstinputlisting(opts, file) = @\lstinputlisting[$opts]$lbrace$file$rbrace
+
+  export def code(body) = $lstlisting @{} $body
+  export def codeOpts(opts, body) = $lstlisting $opts $body
+  export def codeFile(language, file) = $lstinputlisting {breaklines=true,frame=rlbt,caption=$lbrace\detokenize$lbrace$file$rbrace$rbrace,language=$language} $file
+}
+
+

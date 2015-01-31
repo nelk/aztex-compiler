@@ -83,11 +83,12 @@ syn cluster aztexOperator contains=aztexLogicalOperator,aztexArithmeticOperator,
 " Environments. Note - last has highest priority.
 " Note: Keepend not working so using negative lookahead
 syn region aztexCommandE start=/\$ *{/ end=/}/ contains=@aztexBlockTypes,@aztexFuncVars,aztexComment,aztexImport fold
-syn region aztexCommandE start=/\$ *[^{ ]/ end=/[ \n{}()$#@]\@=/ contains=@aztexBlockTypes,@aztexFuncVars,aztexComment,aztexImport keepend
+syn region aztexCommandE start=/\$ *[^{ ]/ end=/[ \n{}()\[\]$#@]\@=/ contains=@aztexBlockTypes,@aztexFuncVars,aztexComment,aztexImport keepend
 syn region aztexTextE start=/@ *{/ end=/}/ contains=@aztexBlockTypes,aztexString,aztexNumber,aztexFloat,aztexComment,@Spell fold
-syn region aztexTextE start=/@ *[^{ ]/ end=/[ \n{}()$#@]\@=/ contains=@aztexBlockTypes,aztexString,aztexNumber,aztexComment,aztexFloat,@Spell keepend
-syn region aztexMathE start=/# *{/ end=/}/ contains=@aztexBlockTypes,aztexNumber,aztexFloat,aztexComment,@aztexOperator fold
-syn region aztexMathE start=/# *[^{ ]/ end=/[ \n{}$#@]\@=/ contains=@aztexBlockTypes,aztexNumber,aztexFloat,aztexComment,@aztexOperator keepend
+syn region aztexTextE start=/@ *[^{ ]/ end=/[ \n{}()\[\]$#@]\@=/ contains=@aztexBlockTypes,aztexString,aztexNumber,aztexComment,aztexFloat,@Spell keepend
+" TODO: Dollar sign makes it not enter math mode for these - fix somehow.
+syn region aztexMathE start=/\(#\|align\|align_star\|equation\|math\) *{/ end=/}/ contains=@aztexBlockTypes,aztexNumber,aztexFloat,aztexComment,@aztexOperator fold
+syn region aztexMathE start=/\(#\|align\|align_star\|equation\|math\) *[^{ ]/ end=/[ \n{}$#@]\@=/ contains=@aztexBlockTypes,aztexNumber,aztexFloat,aztexComment,@aztexOperator keepend
 syn region aztexBlock start=/\([@$#] *\)\@<!{/ end=/}/ fold transparent
 syn cluster aztexBlockTypes contains=aztexCommandE,aztexTextE,aztexMathE,aztexBlock
 

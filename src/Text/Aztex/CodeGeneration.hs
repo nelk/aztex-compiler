@@ -132,9 +132,11 @@ tpageEnv = liftL $ TeXEnv "titlepage" []
 thePreamble :: LaTeX
 thePreamble = runIdentity $ execLaTeXT $ do
   documentclass [Fleqn] article
-  usepackage [] amsmath
+  usepackage ["fleqn"] amsmath
   usepackage [] graphicx
+  usepackage [] "amssymb"
   usepackage [] "enumerate"
   usepackage [] "braket"
+  usepackage [] "listings"
   importGeometry [GHeight (In 9), GWidth (In 6.5)]
 

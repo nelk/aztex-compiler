@@ -6,10 +6,10 @@ ${
   export def latexfn2(fn_name, arg1, arg2) = $fn_name$lbrace$arg1$rbrace$lbrace$arg2$rbrace
 
   export def environment(env_name, env_body) = @{\begin$lbrace$env_name$rbrace $env_body \end$lbrace$env_name$rbrace}
-  export def environment_opt(env_name, opts, env_body) = @{\begin$lbrace$env_name$rbrace[$opts] $env_body \end$lbrace$env_name$rbrace}
+  export def environment_opt(env_name, opts, env_body) = @{\begin[$opts]$lbrace$env_name$rbrace $env_body \end$lbrace$env_name$rbrace}
 
   export def enumerate(body) = $environment enumerate $body
-  export def enumerateN(number, body) = $environment_opt enumerate {$number} {$body}
+  export def enumerateN(number, body) = $enumerate {[$number] $body}
   export def itemize(body) = $environment itemize $body
   export def item(body) = @\item $body
   export def itemN(start, body) = @\item[$start] $body
@@ -26,6 +26,7 @@ ${
 
   export let newline = \newline
   export let nl = \newline
+  export let tilde = \textasciitilde
 
   export def textbf(textbf_body) = $latexfn1 \textbf $textbf_body
   export def bf(bf_body) = $textbf $bf_body
@@ -35,4 +36,7 @@ ${
   export def italic(italic_body) = $textit $italic_body
   export def underline(underline_body) = $latexfn1 @underline $underline_body
   export def quote(quote_body) = ``$quote_body''
+
+  % Spacing.
+  export def hspace(amt) = \hspace$lbrace$amt$rbrace
 }

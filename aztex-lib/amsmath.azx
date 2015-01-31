@@ -1,5 +1,5 @@
-% AMSMath Bindings
-% Import this with "$import aztex-lib/amsmath.azx"
+% AMSMath and AMSSymb Bindings.
+% Import this with "$import aztex-lib/amsmath.azx".
 
 ${
   import aztex-lib/latex.azx
@@ -10,17 +10,22 @@ ${
   export def equation(body) = $environment equation {$implicit_math $body}
   export def math(body2) = $align_star $body2
 
+  % Subscript/Superscript.
+  export def un(t) = _$lbrace$t$rbrace
+  export def ov(t) = ^$lbrace$t$rbrace
+
   % Basic functions.
   export let cos = #\cos
   export let sin = #\sin
   export let tan = #\tan
   export let cot = #\cot
+  export let log = #\log
   export def frac(top, bottom) = $latexfn2 #\frac $top $bottom
   export def hat(value) = $latexfn1 #\hat $value
   export let int = #\int
   export let integral = #\int
   export let partial = #\partial
-  export let sum = #\sum
+  export def sum(below, above) = #\sum_$lbrace$below$rbrace^$lbrace$above$rbrace
   export let rightarrow = #\rightarrow
   export let leftarrow = #\leftarrow
   export def exp(stuff) = #{e^$lbrace$stuff$rbrace}
@@ -41,11 +46,20 @@ ${
   export def abs(body) = #{\left|$body\right|}
 
   % Operators.
+  export let approx = #\approx
   export let le = #\le
   export let ge = #\ge
   export let in = #\in
-  export def max(max_body) = #\max$lbrace$max_body$rbrace
-  export def Max(Max_iter, Max_body) = #\max\limits_$lbrace$Max_iter$rbrace$lbrace$Max_body$rbrace
+  export let cup = #\cup
+  export let union = #\cup
+  export let cap = #\cap
+  export let intersection = #\cap
+  export let subset = #\subset
+  export let subseteq = #\subseteq
+  export def max(body) = #\max$lbrace$body$rbrace
+  export def Max(iter, body) = #\max\limits_$lbrace$iter$rbrace$lbrace$body$rbrace
+  export def min(body) = #\max$lbrace$body$rbrace
+  export def Min(iter, body) = #\min\limits_$lbrace$iter$rbrace$lbrace$body$rbrace
 
   % Greek letters.
   export let alpha = #\alpha
@@ -97,6 +111,8 @@ ${
   export let omega = #\omega
   export let Omega = #\Omega
 
+  % AMSSymb.
+  export let therefore = #\therefore
 }
 
 

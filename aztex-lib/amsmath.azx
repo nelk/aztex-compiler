@@ -11,8 +11,8 @@ ${
   export def math(body2) = $align_star $body2
 
   % Subscript/Superscript.
-  export def un(t) = _$lbrace$t$rbrace
-  export def ov(t) = ^$lbrace$t$rbrace
+  %export def un(t) = _$lbrace$t$rbrace
+  %export def ov(t) = ^$lbrace$t$rbrace
 
   % Basic functions.
   export let cos = #\cos
@@ -28,7 +28,13 @@ ${
   export def sum(below, above) = #\sum_$lbrace$below$rbrace^$lbrace$above$rbrace
   export let rightarrow = #\rightarrow
   export let leftarrow = #\leftarrow
+  export let uparrow = #\uparrow
+  export let downarrow = #\downarrow
   export def exp(stuff) = #{e^$lbrace$stuff$rbrace}
+  export let not = #\not
+  export let forall = #\forall
+  export let exists = #\exists
+  export let times = #\times
 
   % Bonus functions.
   export def expfrac(stuff_num, stuff_denom) = #{e^$lbrace $frac $stuff_num $stuff_denom $rbrace}
@@ -37,6 +43,7 @@ ${
 
   % Constants.
   export let hbar = #\hbar
+  export let bullet = #\bullet
 
   % Visible, expanding bracket helpers.
   % (These are now default in math mode.)
@@ -47,6 +54,7 @@ ${
 
   % Operators.
   export let approx = #\approx
+  export let ne = #\ne
   export let le = #\le
   export let ge = #\ge
   export let in = #\in
@@ -63,49 +71,49 @@ ${
 
   % Greek letters.
   export let alpha = #\alpha
-  export let Alpha = #\Alpha
+  export let Alpha = #A
   export let beta = #\beta
-  export let Beta = #\Beta
+  export let Beta = #B
   export let gamma = #\gamma
   export let Gamma = #\Gamma
   export let delta = #\delta
   export let Delta = #\Delta
   export let epsilon = #\epsilon
-  export let Epsilon = #\Epsilon
+  export let Epsilon = #E
   export let zeta = #\zeta
-  export let Zeta = #\Zeta
+  export let Zeta = #Z
   export let eta = #\eta
-  export let Eta = #\Eta
+  export let Eta = #H
   export let theta = #\theta
   export let Theta = #\Theta
   export let iota = #\iota
-  export let Iota = #\Iota
+  export let Iota = #I
   export let kappa = #\kappa
-  export let Kappa = #\Kappa
+  export let Kappa = #K
   export let lambda = #\lambda
   export let Lambda = #\Lambda
   export let mu = #\mu
-  export let Mu = #\Mu
+  export let Mu = #M
   export let nu = #\nu
-  export let Nu = #\Nu
+  export let Nu = #N
   export let xi = #\xi
   export let Xi = #\Xi
-  export let omicron = #\omicron
-  export let Omicron = #\Omicron
+  export let omicron = #o
+  export let Omicron = #O
   export let pi = #\pi
   export let Pi = #\Pi
   export let rho = #\rho
-  export let Rho = #\Rho
+  export let Rho = #P
   export let sigma = #\sigma
   export let Sigma = #\Sigma
   export let tau = #\tau
-  export let Tau = #\Tau
+  export let Tau = #T
   export let upsilon = #\upsilon
   export let Upsilon = #\Upsilon
   export let phi = #\phi
   export let Phi = #\Phi
   export let chi = #\chi
-  export let Chi = #\Chi
+  export let Chi = #X
   export let psi = #\psi
   export let Psi = #\Psi
   export let omega = #\omega

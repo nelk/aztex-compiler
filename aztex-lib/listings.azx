@@ -3,7 +3,8 @@
 
 ${
   import aztex-lib/latex.azx
-  
+
+  % Note: Use "$verb" yourself!
   export def lstlisting(opts, body) = $environment @lstlisting {[$opts] $literalnewline $body}
   export def lstinputlisting(opts, file) = @\lstinputlisting[$opts]$lbrace$file$rbrace
 

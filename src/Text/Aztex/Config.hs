@@ -22,6 +22,7 @@ builtInState = AztexState {
       , ("implicit_text", AztexFunction [] $ ImplicitModeSwitch LatexText)
       , ("titlepage", AztexFunction ["title", "author"] $ TitlePage (CallBinding "title" []) (CallBinding "author" []))
       , ("literalnewline", AztexFunction [] $ Token "\n")
+      , ("verb", AztexFunction ["body"] $ Verbatim (CallBinding "body" []))
       ]
   , exports = Map.empty
   , imports = Map.empty

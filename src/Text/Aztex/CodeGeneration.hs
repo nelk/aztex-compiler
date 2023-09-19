@@ -25,6 +25,7 @@ renderLatex t tpage = render $ wrapBody t tpage
 generate :: Aztex -> RWS AztexStyle AztexError AztexState LaTeX
 
 generate Empty = return mempty
+generate (Comment _) = return mempty
 generate Whitespace = return " "
 generate EOL = return " " -- " ~\\newline "
 generate (TitlePage _ _) = return mempty
@@ -51,6 +52,7 @@ generate (Binding name fcn) = do
   return mempty
 
 generate (CallBinding name _) = tell ["InternalError: Tried to generate code for CallBinding of \"" ++ name ++ "\", which should have been expanded."] >> return mempty
+generate (Verbatim _) = tell ["InternalError: Tried to generate code for Verbatim, which should have been expanded."] >> return mempty
 
 generate (Block l) = do
   saveState <- get
@@ -61,7 +63,7 @@ generate (Block l) = do
                  }
   return result
 
-generate (Import _) = tell ["InternalError: Tried to generate code for Import, which should have been expanded."] >> return mempty
+generate (Import _ _) = tell ["InternalError: Tried to generate code for Import, which should have been expanded."] >> return mempty
 
 generate (Token t) = return $ raw $ Text.pack t
 generate (Quoted s) = return $ raw "``" <> raw (Text.pack s) <> raw "\""
@@ -132,7 +134,11 @@ wrapBody theBody tpage =
   in setTitle <>
      setAuthor <>
      thePreamble <>
+     stuffs <>
      document (addTitlePage <> theBody)
+
+stuffs :: LaTeX
+stuffs = raw " \\setlist[itemize,1]{label=$\\bullet$} \\setlist[itemize,2]{label=$\\bullet$} \\setlist[itemize,3]{label=$\\bullet$} \\setlist[itemize,4]{label=$\\bullet$} \\setlist[itemize,5]{label=$\\bullet$} \\setlist[itemize,6]{label=$\\bullet$} \\setlist[itemize,7]{label=$\\bullet$} \\setlist[itemize,8]{label=$\\bullet$} \\setlist[itemize,9]{label=$\\bullet$} \\renewlist{itemize}{itemize}{9} "
 
 theTitlePage :: LaTeX
 theTitlePage = tpageEnv $
@@ -146,12 +152,16 @@ tpageEnv = liftL $ TeXEnv "titlepage" []
 
 thePreamble :: LaTeX
 thePreamble = runIdentity $ execLaTeXT $ do
+  -- TODO: Add package imports only for required packages (create $latexpackage command which library files use).
+  -- TODO: Check whether you have pdflatex, graphviz, etc. installed and call them directly. Output raw .tex if a flag is given.
   documentclass [Fleqn] article
   usepackage ["fleqn"] amsmath
   usepackage [] graphicx
   usepackage [] "amssymb"
-  usepackage [] "enumerate"
+  usepackage ["shortlabels"] "enumitem"
   usepackage [] "braket"
   usepackage [] "listings"
+  usepackage [] "graphviz"
+  usepackage [] "setspace"
   importGeometry [GHeight (In 9), GWidth (In 6.5)]
 

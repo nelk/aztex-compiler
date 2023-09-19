@@ -22,6 +22,7 @@ It was designed to be less noisy than LaTeX and have the following features:
 Example
 -------
 First, an example to get us started:
+
 In LaTeX:
 ```
 \newcommand\Prob{\text{Prob}}
@@ -45,12 +46,14 @@ $enumerate${
   }
 }
 ```
+
 Language
 ---------
 The idea is that there are 3 modes that you can easily enter, exit, and nest:
   - Command Mode ($)
   - Text Mode (@)
   - Math Mode (#)
+
 The latter two represent modes in latex, while Command Mode is something specifically
 added by Aztex.
 While in Text Mode, most characters are taken verbatim and inserted into the document.

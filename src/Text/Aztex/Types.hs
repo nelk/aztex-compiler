@@ -14,11 +14,13 @@ data Aztex = CommandBlock Aztex
            | Block [Aztex]
            | Binding String AztexFunction
            | CallBinding String [Aztex]
-           | Import AztexBindings
+           | Import String AztexBindings
            | ImplicitModeSwitch LatexMode
            | TitlePage Aztex Aztex
+           | Verbatim Aztex
            | Subscript Aztex
            | Superscript Aztex
+           | Comment String
            | Whitespace
            | EOL
            | Empty

@@ -1,5 +1,5 @@
 name:                aztex-compiler
-version:             0.2.0.1
+version:             0.2.0.2
 synopsis:            Aztex to LaTeX compiler.
 description:         Compiles Aztex typesetting front-end language to LaTeX. May support multiple backends in the future.
 license:             BSD3
@@ -11,13 +11,13 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  build-depends:   base >=4.6 && <4.7
-                 , parsec == 3.1.5
-                 , HaTeX == 3.13.0.1
-                 , text == 1.1.1.3
-                 , containers == 0.5.0.0
-                 , transformers == 0.4.1.0
-                 , mtl == 2.2.1
+  build-depends:   base >= 4.7
+                 , parsec
+                 , HaTeX
+                 , text
+                 , containers
+                 , transformers
+                 , mtl
   hs-source-dirs:    src
   default-language:  Haskell2010
   exposed-modules:   Text.Aztex.Parser
@@ -30,24 +30,24 @@ library
 executable aztex
   main-is:           src/Main.hs
   build-depends:   aztex-compiler
-                 , base >=4.6 && <4.7
-                 , containers == 0.5.0.0
-                 , mtl == 2.2.1
-                 , text == 1.1.1.3
+                 , base >= 4.7
+                 , containers
+                 , mtl
+                 , text
   default-language:    Haskell2010
 
 
 test-suite aztex_tests
   type:              exitcode-stdio-1.0
   build-depends:   aztex-compiler
-                 , base >=4.5 && <4.7
+                 , base >= 4.7
                  , containers
                  , QuickCheck
-                 , hspec >=1.9.0
-                 , containers == 0.5.0.0
-                 , mtl == 2.2.1
-                 , HaTeX == 3.13.0.1
-                 , text == 1.1.1.3
+                 , hspec
+                 , containers
+                 , mtl
+                 , HaTeX
+                 , text
                  , raw-strings-qq
   hs-source-dirs:    test
   default-language:  Haskell2010

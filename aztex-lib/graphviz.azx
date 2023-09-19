@@ -1,0 +1,5 @@
+${
+  import aztex-lib/latex.azx
+  export def digraph(opts, name, body) = @\digraph[$opts]$lbrace$name$rbrace$lbrace$verb$body$rbrace
+  export def includedot(opts, fname) = @\includedot[$opts]$lbrace$fname$rbrace
+}

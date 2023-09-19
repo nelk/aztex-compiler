@@ -1,9 +1,14 @@
 % LaTeX Base Environments and Commands
 % Import this with "$import aztex-lib/latex.azx"
 
+% TODO: Eat first space after '=' in def and let statements.
 ${
   export def latexfn1(fn_name, arg1) = $fn_name$lbrace$arg1$rbrace
   export def latexfn2(fn_name, arg1, arg2) = $fn_name$lbrace$arg1$rbrace$lbrace$arg2$rbrace
+  export def latexfn3(fn_name, arg1, arg2, arg3) = $fn_name$lbrace$arg1$rbrace$lbrace$arg2$rbrace$lbrace$arg3$rbrace
+
+  export def input(fname) = $latexfn1 \input $fname
+  export def include(fname) = $latexfn1 \include $fname
 
   export def environment(env_name, env_body) = @{\begin$lbrace$env_name$rbrace $env_body \end$lbrace$env_name$rbrace}
   export def environment_opt(env_name, opts, env_body) = @{\begin[$opts]$lbrace$env_name$rbrace $env_body \end$lbrace$env_name$rbrace}
@@ -11,16 +16,27 @@ ${
   export def enumerate(body) = $environment enumerate $body
   export def enumerateN(number, body) = $enumerate {[$number] $body}
   export def itemize(body) = $environment itemize $body
+  export def itemizeN(label, body) = $environment itemize {[@label=$label] $body}
   export def item(body) = @\item $body
   export def itemN(start, body) = @\item[$start] $body
+
+  export let newpage = @\newpage
+  export def minipage(body) = @\begin$lbrace@minipage$rbrace$lbrace@\linewidth$rbrace$body@\end$lbrace@minipage$rbrace
+  export def nobreak(body) = $minipage$body
+
   export def section(sname) = @\section$lbrace$sname$rbrace
+  export def section_(sname) = @\section*$lbrace$sname$rbrace
+  export def subsection(sname) = @\subsection$lbrace$sname$rbrace
+  export def subsection_(sname) = @\subsection*$lbrace$sname$rbrace
+  export def subsubsection(sname) = @\subsubsection$lbrace$sname$rbrace
+  export def subsubsection_(sname) = @\subsubsection*$lbrace$sname$rbrace
   export def sectionN(number, sname) = {
     @\setcounter$lbrace @section $rbrace$lbrace $number $rbrace
     @\addtocounter$lbrace @section $rbrace$lbrace @{-1} $rbrace
     @\section$lbrace $sname $rbrace
   }
   export def sectionAlph(sname) = {
-    @\renewcommand\thesection$lbrace@\Alph$lbrace @section $rbrace$rbrace
+    @\renewcommand\thesection$lbrace@\Alph$lbrace@section$rbrace$rbrace
     @\section$lbrace $sname $rbrace
   }
 
@@ -37,6 +53,25 @@ ${
   export def underline(underline_body) = $latexfn1 @underline $underline_body
   export def quote(quote_body) = ``$quote_body''
 
+  export def paragraph(name, body) = $latexfn1 @\paragraph $name $body
+  export def center(body) = $environment @center $body
+
+  export def large(text) = $lbrace@\large $text$rbrace
+
   % Spacing.
   export def hspace(amt) = \hspace$lbrace$amt$rbrace
+  export def vspace(amt) = \vspace$lbrace$amt$rbrace
+
+  % Label and ref.
+  export def labelEnv(name, body) = $body $latexfn1 \label $name
+  export def label(name) = $latexfn1 \label $name
+  export def ref(name) = $latexfn1 \ref $name
+
+  % Table.
+  export def tabular(spec, content) = {
+    $let env_name =@tabular
+    @\begin$lbrace$env_name$rbrace$lbrace$spec$rbrace $content @\end$lbrace$env_name$rbrace
+  }
+  export def table(spec, content) = $tabular $spec $content
+  export let hline =@\hline
 }

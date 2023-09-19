@@ -69,8 +69,12 @@ parseSpaces = do
   sps <- many $ oneOf " \v\f\t"
   return $ if not (null sps) then Whitespace else Empty
 
-parseComment :: AztexParser ()
-parseComment = string aztexCommentStart *> skipMany (noneOf "\n\r") <* parseEOL
+parseComment :: AztexParser Aztex
+parseComment = do
+  _ <- string aztexCommentStart
+  c <- many (noneOf "\n\r")
+  _ <- parseEOL
+  return $ Comment c
 
 -- Represents block in either text or math mode.
 parseBlock :: AztexParser Aztex
@@ -165,7 +169,7 @@ parseImport = (do
     case Map.lookup import_fname (imports st) of
       Just ims -> do
         putState st{bindings = Map.union (bindings st) ims}
-        return $ Import ims
+        return $ Import import_fname ims
       Nothing -> do
         either_parsed_import <- liftIO $ parseAztexFile_ import_fpath $ imports st
         case either_parsed_import of
@@ -175,7 +179,7 @@ parseImport = (do
               { bindings = Map.union (bindings s) ims
               , imports = Map.insert import_fname ims (imports s)
               }
-            return $ Import ims
+            return $ Import import_fname ims
 
   ) <?> "Incorrectly formatted import statement."
 

@@ -4,6 +4,7 @@ module Text.Aztex.Processing where
 import qualified Data.Map as Map
 import Control.Monad.RWS
 import Control.Applicative
+import Data.List (intercalate)
 
 import Text.Aztex.Helpers
 import Text.Aztex.Types
@@ -14,10 +15,24 @@ expand :: Aztex -> RWS AztexStyle AztexError AztexState Aztex
 expand Empty = return Empty
 expand Whitespace = return Whitespace
 expand EOL = return EOL
+expand (Comment _) = return Empty
 
 expand (CommandBlock aztex) = CommandBlock <$> expand aztex
 expand (TextBlock aztex) = TextBlock <$> expand aztex
 expand (MathBlock aztex) = MathBlock <$> expand aztex
+
+--TODO: Split usage of Token between actual input tokens and raw text that has been generated during processing.
+expand (Verbatim (CallBinding name [])) = do
+  -- Lookup the call directly and then use what's in it verbatim.
+  -- Some hacks required to get this working.
+  st <- get
+  case Map.lookup name (bindings st) of
+    Nothing -> tell ["Identifier " ++ name ++ " used out of scope in verbatim call."] >> return Empty
+    Just (AztexFunction [] (Block bodies)) -> return $ Token $ concatMap verbatim bodies
+    Just (AztexFunction [] (CommandBlock (Block bodies))) -> return $ Token $ concatMap verbatim bodies
+    Just (AztexFunction [] body) -> return $ Token $ verbatim body
+    Just (AztexFunction _ _) -> tell ["Malformed verbatim body!"] >> return Empty
+expand (Verbatim _) = undefined
 
 expand (Binding name fcn) = do
   st <- get
@@ -49,7 +64,7 @@ expand (CallBinding name args) = do
 
 expand (Block l) = Block <$> mapM expand l
 
-expand (Import imp) = do
+expand (Import _ imp) = do
   st <- get
   put $ st {bindings = Map.union (bindings st) imp}
   return Empty
@@ -68,4 +83,41 @@ expand (TitlePage title_a author_a) = do
   author_l <- expand author_a
   put st {titlePage = Just (title_l, author_l)}
   return Empty
+
+verbatim :: Aztex -> String
+verbatim Empty = ""
+verbatim Whitespace = " "
+verbatim EOL = "\n"
+verbatim (Comment c) = "%" ++ c
+
+verbatim (CommandBlock aztex) = "$" ++ verbatim aztex
+verbatim (TextBlock aztex) = "@" ++ verbatim aztex
+verbatim (MathBlock aztex) = "#" ++ verbatim aztex
+verbatim (Verbatim aztex) = verbatim aztex
+
+verbatim (Binding name (AztexFunction args body)) =
+  let defOrLet | null args = "let"
+               | otherwise = "def"
+      argString | null args = ""
+                | otherwise = "(" ++ intercalate ", " args ++ ")"
+  in defOrLet ++ " " ++ name ++ " " ++ argString ++ " = " ++ verbatim body
+
+verbatim (Import name _) = "import " ++ name
+
+verbatim (CallBinding name args) = name ++ concatMap verbatim args
+verbatim (Token t) = t
+verbatim (Block parts) = "{" ++ concatMap verbatim parts ++ "}"
+-- Hack.
+verbatim (Parens (Block bs)) = "(" ++ concatMap verbatim bs ++ ")"
+verbatim (Parens a) = "(" ++ verbatim a ++ ")"
+-- Hack.
+verbatim (Brackets (Block bs)) = "[" ++ concatMap verbatim bs ++ "]"
+verbatim (Brackets a) = "[" ++ verbatim a ++ "]"
+verbatim (Subscript a) = "_" ++ verbatim a
+verbatim (Superscript a) = "^" ++ verbatim a
+verbatim (Quoted a) = "\"" ++ a ++ "\""
+verbatim (ImplicitModeSwitch _) = "" -- TODO.
+verbatim (TitlePage title_a author_a) = "" -- TODO.
+
+
 

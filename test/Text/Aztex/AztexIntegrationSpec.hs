@@ -62,7 +62,7 @@ compareText_ _ _ ia ib = Just (ia, ib)
 
 
 wrapLatexBoilerplate :: String -> String
-wrapLatexBoilerplate body = "\\documentclass[fleqn]{article}\\usepackage[fleqn]{amsmath}\\usepackage{graphicx}\\usepackage{amssymb}\\usepackage{enumerate}\\usepackage{braket}\\usepackage{listings}\\usepackage[height=9.00000in,width=6.50000in]{geometry}\\begin{document} " ++ body ++ "\\end{document}"
+wrapLatexBoilerplate body = "\\documentclass[fleqn]{article}\\usepackage[fleqn]{amsmath}\\usepackage{graphicx}\\usepackage{amssymb}\\usepackage{enumitem}\\usepackage{braket}\\usepackage{listings}\\usepackage{graphviz}\\usepackage[height=9.00000in,width=6.50000in]{geometry}\\begin{document} " ++ body ++ "\\end{document}"
 
 titlepageBoilerplate :: String -> String -> String
 titlepageBoilerplate title author = "\\title{\\vspace*{\\fill}" ++ title ++ "}\\author{ " ++ author ++ "\\vspace*{\\fill}}"
@@ -168,12 +168,32 @@ functionSameArgsOutput = [r|
 foo(bar(test))
 |]
 
+verbInput :: String
+verbInput = [r|
+  Hello $verb{@#{there{}""}} test.
+|]
+verbOutput :: String
+verbOutput = [r|
+  Hello @#{there{}""} test.
+|]
+
+verbBindingCallInput :: String
+verbBindingCallInput = [r|
+  $let abc = test
+  Hello $verb$abc test.
+|]
+verbBindingCallOutput :: String
+verbBindingCallOutput = [r|
+  Hello test test.
+|]
 
 spec :: Spec
 spec = describe "Aztex Parser" $ do
             it "correctly parses a simple file" $ genTest input1 (wrapLatexBoilerplate output1)
             it "creates title page" $ genTest titlepageInput (titlepageBoilerplate "Title" "First Last" ++ wrapLatexBoilerplate titlepageOutput)
             it "uses correct function argument bindings" $ genTest functionSameArgsInput (wrapLatexBoilerplate functionSameArgsOutput)
+            it "keeps text the same in verbatim mode" $ genTest verbInput (wrapLatexBoilerplate verbOutput)
+            it "expands binding one level in verbatim call" $ genTest verbBindingCallInput (wrapLatexBoilerplate verbBindingCallOutput)
 
 main :: IO ()
 main = hspec spec
